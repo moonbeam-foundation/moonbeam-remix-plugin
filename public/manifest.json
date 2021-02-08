@@ -1,0 +1,25 @@
+{
+  "short_name": "Moonbeam Remix",
+  "name": "Moonbeam Plugin for Remix",
+  "icons": [
+    {
+      "src": "Moonbeam-Favicon-50.png",
+      "type": "image/png",
+      "sizes": "50x50"
+    },
+    {
+      "src": "Moonbeam-Favicon-250px.png",
+      "type": "image/png",
+      "sizes": "250x250"
+    },
+    {
+      "src": "Moonbeam-Favicon-500px.png",
+      "type": "image/png",
+      "sizes": "500x500"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
