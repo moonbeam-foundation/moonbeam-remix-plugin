@@ -1,4 +1,4 @@
-![moonbeam](./public/Moonbeam Logo Final - 500px.png)
+![moonbeam](./public/Moonbeam_Logo_Final_500px.png)
 
 # Moonbeam Plugin for Remix
 
