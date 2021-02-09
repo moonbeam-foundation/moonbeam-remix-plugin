@@ -7,9 +7,7 @@ The Moonbeam plugin for Ethereum's Remix IDE. It support for deploy and interact
 
 # Getting Started
 1. Click RemixIDE Plugin Manager Icon and activate Moonbeam Plugin
-<!-- ![plugin manager](./plugin1.png) -->
 2. Click Moonbeam Plugin Icon
-<!-- ![moonbeam](./plugin2.png) -->
 3. Connect MetaMask Wallet Account
 4. Select Network
 5. Compile your smart contract
