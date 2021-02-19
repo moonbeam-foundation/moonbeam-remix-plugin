@@ -4,8 +4,33 @@
 
 The Moonbeam plugin for Ethereum's Remix IDE. It support for deploy and interacting on a Moonbeam network.
 
-
 # Getting Started
+
+First, clone the repository:
+
+```
+git clone https://github.com/PureStake/moonbeam-remix-plugin
+cd moonbeam-remix-plugin
+```
+
+Install dependencies:
+
+```
+yarn install
+```
+
+Run the app:
+
+```
+yarn start
+``` 
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.<br />
+You will also see any lint errors in the console.
+
+## How to Use the Plugin
+
 1. Click RemixIDE Plugin Manager Icon and activate Moonbeam Plugin
 2. Click Moonbeam Plugin Icon
 3. Connect MetaMask Wallet Account
@@ -14,17 +39,6 @@ The Moonbeam plugin for Ethereum's Remix IDE. It support for deploy and interact
 6. Select Contract to deploy
 7. Deploy
 
-# Scripts
-
-In the project directory, you can run:
-
-## `yarn start`
-
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
 ## TODOS
-- let user know if metamask is not in the right network
+
+- Let user know if Metamask is not in the right network
