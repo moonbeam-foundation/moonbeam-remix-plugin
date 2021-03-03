@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container, Form, InputGroup, Tooltip, Button, OverlayTrigger } from 'react-bootstrap';
+import copy from 'copy-to-clipboard';
 import { NETWORKS, MoonbeamLib, NETWORKS_BY_IDS } from './moonbeam-signer';
 import Compiler from './components/Compiler';
 import SmartContracts from './components/SmartContracts';
@@ -97,6 +98,21 @@ const App: React.FunctionComponent = () => {
 							<small>ACCOUNT</small>
 						</Form.Text>
 						<InputGroup>
+							{account ? (
+								<InputGroup.Append>
+									<Button
+										variant="link"
+										size="sm"
+										className="mt-0 pt-0 float-right"
+										disabled={!account}
+										onClick={() => {
+											copy(account);
+										}}
+									>
+										<i className="far fa-copy" />
+									</Button>
+								</InputGroup.Append>
+							) : null}
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
 							<InputGroup.Append>
 								<OverlayTrigger

@@ -19,6 +19,20 @@ interface InterfaceDrawMethodProps {
 	address: string;
 	updateBalance: (address: string) => void;
 }
+function buttonVariant(stateMutability: string | undefined): string {
+	switch (stateMutability) {
+		case 'view':
+		case 'pure':
+			return 'primary';
+		case 'nonpayable':
+			return 'warning';
+		case 'payable':
+			return 'danger';
+		default:
+			break;
+	}
+	return '';
+}
 
 const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) => {
 	const [error, setError] = React.useState<string>('');
@@ -34,21 +48,6 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 		});
 		setArgs(temp);
 	}, [abi.inputs]);
-
-	function buttonVariant(stateMutability: string | undefined): string {
-		switch (stateMutability) {
-			case 'view':
-			case 'pure':
-				return 'primary';
-			case 'nonpayable':
-				return 'warning';
-			case 'payable':
-				return 'danger';
-			default:
-				break;
-		}
-		return '';
-	}
 
 	return (
 		<>
@@ -171,12 +170,23 @@ const ContractCard: React.FunctionComponent<{
 		updateBalance,
 	} = props;
 
+	const colors: { [key: string]: string } = {
+		primary: '#007aa6', // '#007bff',
+		warning: '#c97539', // '#ffc107',
+		danger: '#dc3545',
+	};
+
 	function DrawMathods() {
 		const list = contract.abi ? contract.abi : [];
 		const items = list.map((abi: AbiItem, id: number) => (
 			<Accordion key={`Methods_A_${index.toString()}`}>
 				<Card>
-					<Accordion.Toggle as={Card.Header} eventKey={`Methods_${id}`} className="p-1">
+					<Accordion.Toggle
+						style={{ color: 'white', backgroundColor: colors[buttonVariant(abi.stateMutability)] }}
+						as={Card.Header}
+						eventKey={`Methods_${id}`}
+						className="p-1"
+					>
 						<small>{abi.name}</small>
 					</Accordion.Toggle>
 					<Accordion.Collapse eventKey={`Methods_${id}`}>
@@ -194,6 +204,7 @@ const ContractCard: React.FunctionComponent<{
 				</Card>
 			</Accordion>
 		));
+		console.log(items);
 		return <>{items}</>;
 	}
 

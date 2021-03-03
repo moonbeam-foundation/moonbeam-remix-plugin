@@ -1,11 +1,12 @@
 import React from 'react';
 import { Alert, Button, Card, Form, InputGroup } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
-import { AbiInput, AbiItem } from 'web3-utils';
+import { AbiInput, AbiItem, jsonInterfaceMethodToString } from 'web3-utils';
 import type { Api } from '@remixproject/plugin-utils';
-import { Client } from '@remixproject/plugin';
-import { IRemixApi } from '@remixproject/plugin-api';
-import { createClient } from '@remixproject/plugin-iframe';
+// import { Client } from '@remixproject/plugin';
+import { CompilationError, CompilationResult, IRemixApi } from '@remixproject/plugin-api';
+import { PluginClient } from '@remixproject/plugin';
+import { createClient } from '@remixproject/plugin-webview';
 // import { Celo } from '@dexfair/celo-web-signer';
 import { MoonbeamLib } from '../moonbeam-signer';
 import { InterfaceContract } from './Types';
@@ -42,7 +43,7 @@ interface InterfaceProps {
 }
 
 const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
-	const [client, setClient] = React.useState<Client<Api, Readonly<IRemixApi>> | undefined | null>(null);
+	const [client, setClient] = React.useState<PluginClient<Api, Readonly<IRemixApi>> | undefined | null>(null);
 	const [fileName, setFileName] = React.useState<string>('');
 	const [iconSpin, setIconSpin] = React.useState<string>('');
 	const [contracts, setContracts] = React.useState<{ fileName: string; data: { [key: string]: any } }>({
@@ -53,7 +54,9 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	const [constructor, setConstructor] = React.useState<AbiItem | null>(null);
 	const [args, setArgs] = React.useState<{ [key: string]: string }>({});
 	const [address, setAddress] = React.useState<string>('');
-	const [error, setError] = React.useState<string>('');
+	const [errors, setErrors] = React.useState<string[]>([]);
+	const [autoCompiler, setAutoCompiler] = React.useState<boolean>(false);
+	const [languageVersion, setLangVersion] = React.useState<string>('');
 
 	const {
 		moonbeamLib,
@@ -67,22 +70,40 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 
 	React.useEffect(() => {
 		async function init() {
-			const temp = createClient();
+			const temp: PluginClient = createClient(new PluginClient());
 			await temp.onload();
-			temp.solidity.on('compilationFinished', (fn: string, source: any, languageVersion: string, data: any) => {
-				// console.log(fn, source, languageVersion, data);
-				setContracts({ fileName: fn, data: data.contracts[fn] });
-				// eslint-disable-next-line
-				select(
-					Object.keys(data.contracts[fn]).length > 0 ? Object.keys(data.contracts[fn])[0] : '',
-					data.contracts[fn]
-				);
-			});
+			temp.on(
+				'solidity',
+				'compilationFinished',
+				(fn: string, source: any, _languageVersion: string, data: CompilationResult) => {
+					// console.log(fn, source, languageVersion, data);
+					console.log('ok', _languageVersion);
+					setLangVersion(_languageVersion);
+					if (data.errors)
+						setErrors(
+							data.errors.map((error: CompilationError) =>
+								error.formattedMessage ? error.formattedMessage : JSON.stringify(error)
+							)
+						);
+					if (data.contracts[fn]) setContracts({ fileName: fn, data: data.contracts[fn] });
+					// eslint-disable-next-line
+					select(
+						Object.keys(data.contracts[fn]).length > 0 ? Object.keys(data.contracts[fn])[0] : '',
+						data.contracts[fn]
+					);
+				}
+			);
 			temp.on('fileManager', 'currentFileChanged', (fn: string) => {
 				setFileName(fn);
 			});
+			// auto compile
+			temp.on('fileManager', 'fileSaved', (fn: string) => {
+				if (autoCompiler) {
+					compile();
+				}
+			});
 			try {
-				setFileName(await temp.fileManager.getCurrentFile());
+				setFileName(await temp.call('fileManager', 'getCurrentFile')); // .fileManager.getCurrentFile());
 			} catch (e) {
 				// eslint-disable-next-line no-console
 				console.log('Error from IDE : No such file or directory No file selected');
@@ -95,8 +116,9 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 
 	async function compile() {
 		setBusy(true);
+		console.log('COMPILE');
 		setIconSpin('fa-spin');
-		await client?.solidity.compile(fileName);
+		await client?.call('solidity', 'compile', fileName);
 		setIconSpin('');
 		setBusy(false);
 	}
@@ -129,6 +151,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 					JSON.parse(JSON.stringify(contracts.data[contractName].abi))
 				);
 				const accounts = await moonbeamLib.getAccounts();
+				console.log('constructor', constructor, 'args', args); // TODO check inputs
 				const parms: string[] = getArguments(constructor, args);
 				const rawTx = {
 					from: accounts[0],
@@ -151,11 +174,28 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 			} catch (e) {
 				// eslint-disable-next-line
 				console.error(e);
-				setError(e.message ? e.message : e.toString());
+
+				console.log('ok', '+', e.toString(), '+');
+				setErrors([
+					e.message && e.message === 'param.map is not a function'
+						? 'Constructor Input Missing'
+						: e.message
+						? e.message
+						: e.toString(),
+				]);
 			}
 			setBusy(false);
 		}
 	}
+
+	// async function copyToClipboard(copiedAddr: string) {
+	// 	const queryOpts = { name: 'clipboard-write' };
+	// 	const permissionStatus = await navigator.permissions.query(queryOpts as PermissionDescriptor);
+
+	// 	// Will be 'granted', 'denied' or 'prompt':
+	// 	console.log(permissionStatus.state);
+	// 	navigator.clipboard.writeText(copiedAddr);
+	// }
 
 	function Contracts() {
 		const { data } = contracts;
@@ -196,22 +236,47 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 		);
 	}
 
+	// {/* <InputGroup className="mb-3">
+	// 	<InputGroup.Prepend>
+	// 		<Form.Check
+	// 			type="checkbox"
+	// 			label="Auto-Compile"
+	// 			onClick={async () => {
+	// 				await setAutoCompiler(!autoCompiler);
+	// 			}}
+	// 		/>
+	// 	</InputGroup.Prepend>
+	// 	<InputGroup.Append>
+	// 		<small>{languageVersion}</small>
+	// 	</InputGroup.Append>
+	// </InputGroup> */}
 	return (
 		<div className="Compiler">
-			<Button
-				variant="primary"
-				onClick={async () => {
-					await compile();
-				}}
-				block
-				disabled={fileName === '' || iconSpin !== ''}
-			>
-				<i className={`fas fa-sync ${iconSpin}`} style={{ marginRight: '0.3em' }} />
-				<span>
-					Compile&nbsp;
-					{`${fileName === '' ? '<no file selected>' : fileName.split('/')[fileName.split('/').length - 1]}`}
-				</span>
-			</Button>
+			<Form.Group>
+				<InputGroup className="mb-3">
+					<Form.Check
+						type="checkbox"
+						label={`Auto-Compile (${languageVersion})`}
+						onClick={async () => {
+							await setAutoCompiler(!autoCompiler);
+						}}
+					/>
+				</InputGroup>
+				<Button
+					variant="primary"
+					onClick={async () => {
+						await compile();
+					}}
+					block
+					disabled={fileName === '' || iconSpin !== ''}
+				>
+					<i className={`fas fa-sync ${iconSpin}`} style={{ marginRight: '0.3em' }} />
+					<span>
+						Compile&nbsp;
+						{`${fileName === '' ? '<no file selected>' : fileName.split('/')[fileName.split('/').length - 1]}`}
+					</span>
+				</Button>
+			</Form.Group>
 			<hr />
 			<Contracts />
 			<Card>
@@ -223,11 +288,26 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 							args[name] = value;
 						}}
 					/>
-					<Alert variant="danger" onClose={() => setError('')} dismissible hidden={error === ''}>
-						<small>{error}</small>
-					</Alert>
+					{errors.map((error, i) => {
+						return (
+							<Alert
+								key={error}
+								variant="danger"
+								onClose={() =>
+									setErrors(
+										errors.filter((_, j) => {
+											return j !== i;
+										})
+									)
+								}
+								dismissible
+								hidden={error === ''}
+							>
+								<small>{error}</small>
+							</Alert>
+						);
+					})}
 					<InputGroup className="mb-3">
-						<Form.Control value={address} placeholder="contract address" size="sm" readOnly />
 						<InputGroup.Append>
 							<Button
 								variant="warning"
@@ -242,6 +322,28 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 							</Button>
 						</InputGroup.Append>
 					</InputGroup>
+					<Form.Group>
+						<Form.Label>Deployed Contract Address</Form.Label>
+						<InputGroup className="mb-3">
+							{address !== '' ? (
+								<InputGroup.Append>
+									<Button
+										variant="link"
+										size="sm"
+										className="mt-0 pt-0 float-right"
+										disabled={!address}
+										onClick={() => {
+											copy(address);
+										}}
+									>
+										<i className="far fa-copy" />
+									</Button>
+								</InputGroup.Append>
+							) : null}
+							<Form.Control value={address} placeholder="contract address" size="sm" readOnly />
+						</InputGroup>
+						{address === '' ? <Form.Text className="text-muted">Deploy your own contract</Form.Text> : null}
+					</Form.Group>
 				</Card.Body>
 			</Card>
 		</div>

@@ -265,11 +265,13 @@ export class MoonbeamLib {
 	}
 
 	async sendTransaction(web3Tx: TransactionConfig): Promise<TransactionReceipt> {
+		console.log('mmm');
 		try {
 			// const txResult: TransactionResult = await this.kit.sendTransaction(web3Tx);
 			// return txResult.waitReceipt();
 			return await this.web3.eth.sendTransaction(web3Tx);
 		} catch (error) {
+			console.log('he', error, 'ho');
 			throw new Error(error);
 		}
 	}
