@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Form, InputGroup, Tooltip, Button, OverlayTrigger } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
-import { NETWORKS, MoonbeamLib, NETWORKS_BY_IDS } from './moonbeam-signer';
+import { NETWORKS, MoonbeamLib, NETWORKS_BY_IDS, networkName } from './moonbeam-signer';
 import Compiler from './components/Compiler';
 import SmartContracts from './components/SmartContracts';
 import { InterfaceContract } from './components/Types';
@@ -21,15 +21,13 @@ const App: React.FunctionComponent = () => {
 		// if (!moonbeamLib.isConnected) {
 		setBusy(true);
 		// setBlockscout(NETWORKS[network].blockscout || '');
-		const { networkId } = await moonbeamLib.connectMetaMask((type: string, accounts: string[]) => {
+		const { networkId } = await moonbeamLib.connectMetaMask((accounts: string[]) => {
 			setAccount(accounts[0]);
 			updateBalance(accounts[0]);
+		},(_networkId:number)=>{
+			setNetwork(networkName(_networkId))
 		});
-		if (NETWORKS_BY_IDS[networkId]) {
-			setNetwork(NETWORKS_BY_IDS[networkId].name);
-		} else {
-			setNetwork('Not Moonbeam');
-		}
+		setNetwork(networkName(networkId))
 		// For analytics
 		// if (result && (window as { [key: string]: any }).gtag) {
 		// 	const { gtag } = window as { [key: string]: any };

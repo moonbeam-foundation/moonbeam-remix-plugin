@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { AbiItem } from 'web3-utils';
+import { AbiItem, hexToNumber } from 'web3-utils';
 import { TransactionConfig, TransactionReceipt } from 'web3-core';
 
 // //import { newKitFromWeb3, ContractKit, newKit } from '@celo/contractkit';
@@ -38,6 +38,13 @@ export const NETWORKS_BY_IDS: { [key: string]: { name: string; url: string } } =
 		name: 'Moonbeam Standalone',
 		url: 'http://127.0.0.1:9933',
 	},
+};
+
+export const networkName = (networkId: number): string => {
+	if (NETWORKS_BY_IDS[networkId]) {
+		return NETWORKS_BY_IDS[networkId].name;
+	}
+	return 'Not Moonbeam';
 };
 
 export const ERC20ABI: AbiItem[] = erc20;
@@ -164,11 +171,13 @@ export class MoonbeamLib {
 
 	async connectMetaMask(
 		// eslint-disable-next-line no-unused-vars
-		onAccountsChanged: (type: string, accounts: Address[]) => void
+		onAccountsChanged: (accounts: Address[]) => void,
+		onNetworkChanged: (networkId: number) => void
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
-			if ((window as { [key: string]: any }).ethereum.isMetaMask) {
-				await (window as { [key: string]: any }).ethereum.enable();
+			const { ethereum } = window as { [key: string]: any }; // .ethereum;
+			if (ethereum.isMetaMask) {
+				await ethereum.enable();
 			}
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
 			if (provider && provider.isMetaMask) {
@@ -178,10 +187,26 @@ export class MoonbeamLib {
 				// this.kit = newKitFromWeb3(web3, this.wallet);
 				if (onAccountsChanged) {
 					const accountsRead = await this.web3.eth.getAccounts(); // this.wallet.getAccounts();
-					onAccountsChanged('metamask', accountsRead);
+					onAccountsChanged(accountsRead);
 					if (localStorage) {
 						localStorage.setItem('MoonbeamWebSigner', 'metamask');
 					}
+					ethereum.on('accountsChanged', (accounts: string[]) => {
+						console.log('accountsChanged', accounts);
+						onAccountsChanged(accounts);
+						// Handle the new accounts, or lack thereof.
+						// "accounts" will always be an array, but it can be empty.
+					});
+
+					ethereum.on('chainChanged', (chainId: string) => {
+						console.log('chainChanged', chainId, hexToNumber(chainId));
+						// const networkId = await this.web3.eth.net.getId();
+						onNetworkChanged(Number(chainId));
+						// Handle the new chain.
+						// Correctly handling chain changes can be complicated.
+						// We recommend reloading the page unless you have good reason not to.
+						// window.location.reload();
+					});
 				}
 				this.isConnected = true;
 			} else {
