@@ -21,13 +21,16 @@ const App: React.FunctionComponent = () => {
 		// if (!moonbeamLib.isConnected) {
 		setBusy(true);
 		// setBlockscout(NETWORKS[network].blockscout || '');
-		const { networkId } = await moonbeamLib.connectMetaMask((accounts: string[]) => {
-			setAccount(accounts[0]);
-			updateBalance(accounts[0]);
-		},(_networkId:number)=>{
-			setNetwork(networkName(_networkId))
-		});
-		setNetwork(networkName(networkId))
+		const { networkId } = await moonbeamLib.connectMetaMask(
+			(accounts: string[]) => {
+				setAccount(accounts[0]);
+				updateBalance(accounts[0]);
+			},
+			(_networkId: number) => {
+				setNetwork(networkName(_networkId));
+			}
+		);
+		setNetwork(networkName(networkId));
 		// For analytics
 		// if (result && (window as { [key: string]: any }).gtag) {
 		// 	const { gtag } = window as { [key: string]: any };
