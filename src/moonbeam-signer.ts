@@ -170,12 +170,13 @@ export class MoonbeamLib {
 	// 	}
 
 	async connectMetaMask(
-		// eslint-disable-next-line no-unused-vars
 		onAccountsChanged: (accounts: Address[]) => void,
 		onNetworkChanged: (networkId: number) => void
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
+			console.log('03/09/21');
 			const { ethereum } = window as { [key: string]: any }; // .ethereum;
+			console.log('ethereum', ethereum);
 			if (ethereum.isMetaMask) {
 				await ethereum.enable();
 			}
@@ -192,6 +193,7 @@ export class MoonbeamLib {
 					// 	localStorage.setItem('MoonbeamWebSigner', 'metamask');
 					// }
 					ethereum.on('accountsChanged', (accounts: string[]) => {
+						console.log('accountsChanged', accounts);
 						onAccountsChanged(accounts);
 						// Handle the new accounts, or lack thereof.
 						// "accounts" will always be an array, but it can be empty.
