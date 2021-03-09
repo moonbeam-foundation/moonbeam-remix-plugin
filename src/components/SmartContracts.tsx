@@ -211,12 +211,22 @@ const ContractCard: React.FunctionComponent<{
 	return (
 		<CSSTransition in={enable} timeout={300} classNames="zoom" unmountOnExit onExited={remove}>
 			<Card className="mb-2">
-				<Card.Header className="px-2 py-1">
+				<Accordion.Toggle as={Card.Header} eventKey="0" className="px-2 py-1">
 					<strong className="align-middle">{contract.name}</strong>
 					&nbsp;
 					<small className="align-middle">{`${contract.address.substring(0, 6)}...${contract.address.substring(
 						38
 					)}`}</small>
+					<Button
+						variant="link"
+						size="sm"
+						className="float-left align-middle"
+						onClick={() => {
+							copy(contract.address);
+						}}
+					>
+						<i className="far fa-copy" />
+					</Button>
 					{/* <Button
 						className="float-right align-middle"
 						size="sm"
@@ -237,8 +247,10 @@ const ContractCard: React.FunctionComponent<{
 					>
 						<i className="fas fa-trash-alt" />
 					</Button>
-				</Card.Header>
-				{DrawMathods()}
+				</Accordion.Toggle>
+				<Accordion.Collapse eventKey="0">
+					<Card.Body>{DrawMathods()} </Card.Body>
+				</Accordion.Collapse>
 			</Card>
 		</CSSTransition>
 	);
@@ -287,7 +299,7 @@ const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (p
 				key={`Contract_${index.toString()}`}
 			/>
 		));
-		return <>{items}</>;
+		return <Accordion defaultActiveKey="0">{items}</Accordion>;
 	}
 
 	return (

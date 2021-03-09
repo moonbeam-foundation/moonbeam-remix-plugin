@@ -42,6 +42,11 @@ interface InterfaceProps {
 	updateBalance: (address: string) => void;
 }
 
+interface CompilationErrorFormatted {
+	message: string;
+	severity: string;
+}
+
 const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	const [client, setClient] = React.useState<PluginClient<Api, Readonly<IRemixApi>> | undefined | null>(null);
 	const [fileName, setFileName] = React.useState<string>('');
@@ -54,7 +59,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	const [constructor, setConstructor] = React.useState<AbiItem | null>(null);
 	const [args, setArgs] = React.useState<{ [key: string]: string }>({});
 	const [address, setAddress] = React.useState<string>('');
-	const [errors, setErrors] = React.useState<string[]>([]);
+	const [errors, setErrors] = React.useState<CompilationErrorFormatted[]>([]);
 	const [autoCompiler, setAutoCompiler] = React.useState<boolean>(false);
 	const [languageVersion, setLangVersion] = React.useState<string>('');
 
@@ -79,14 +84,18 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 					// console.log(fn, source, languageVersion, data);
 					console.log('ok', _languageVersion);
 					setLangVersion(_languageVersion);
-					if (data.errors)
+					if (data.errors) {
+						console.log('data.errors', data.errors);
 						setErrors(
-							data.errors.map((error: CompilationError) =>
-								error.formattedMessage ? error.formattedMessage : JSON.stringify(error)
-							)
+							data.errors.map((error: CompilationError) => {
+								return {
+									message: error.formattedMessage ? error.formattedMessage : JSON.stringify(error),
+									severity: error.severity,
+								};
+							})
 						);
+					}
 					if (data.contracts[fn]) setContracts({ fileName: fn, data: data.contracts[fn] });
-					// eslint-disable-next-line
 					select(
 						Object.keys(data.contracts[fn]).length > 0 ? Object.keys(data.contracts[fn])[0] : '',
 						data.contracts[fn]
@@ -188,19 +197,25 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 		}
 	}
 
-	// async function copyToClipboard(copiedAddr: string) {
-	// 	const queryOpts = { name: 'clipboard-write' };
-	// 	const permissionStatus = await navigator.permissions.query(queryOpts as PermissionDescriptor);
-
-	// 	// Will be 'granted', 'denied' or 'prompt':
-	// 	console.log(permissionStatus.state);
-	// 	navigator.clipboard.writeText(copiedAddr);
-	// }
-
 	function Contracts() {
 		const { data } = contracts;
 		const value = contracts.fileName.split('/')[contracts.fileName.split('/').length - 1];
-		const items = Object.keys(data).map((key) => <option key={key} value={key}>{`${key} - ${value}`}</option>);
+		const items = Object.keys(data).map((key) => (
+			<option key={key} value={key}>
+				{`${key} - ${value}`}
+			</option>
+		));
+		// <Button
+		// 								variant="link"
+		// 								size="sm"
+		// 								className="mt-0 pt-0 float-right"
+		// 								disabled={!address}
+		// 								onClick={() => {
+		// 									copy(address);
+		// 								}}
+		// 							>
+		// 								<i className="far fa-copy" />
+		// 							</Button>
 		return (
 			<Form>
 				<Form.Group>
@@ -230,6 +245,20 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						>
 							{items}
 						</Form.Control>
+						<InputGroup.Append>
+							<small style={{ padding: '8px' }}>
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									width="16"
+									height="16"
+									fill="currentColor"
+									className="bi bi-caret-down-fill"
+									viewBox="-8px 0 20 20"
+								>
+									<path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
+								</svg>
+							</small>
+						</InputGroup.Append>
 					</InputGroup>
 				</Form.Group>
 			</Form>
@@ -289,10 +318,11 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						}}
 					/>
 					{errors.map((error, i) => {
+						console.log('error', error);
 						return (
 							<Alert
-								key={error}
-								variant="danger"
+								key={error.message}
+								variant={error.severity === 'error' ? 'danger' : 'warning'}
 								onClose={() =>
 									setErrors(
 										errors.filter((_, j) => {
@@ -301,9 +331,9 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 									)
 								}
 								dismissible
-								hidden={error === ''}
+								hidden={error.message === ''}
 							>
-								<small>{error}</small>
+								<small>{error.message}</small>
 							</Alert>
 						);
 					})}
