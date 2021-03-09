@@ -26,7 +26,8 @@ const App: React.FunctionComponent = () => {
 				setAccount(accounts[0]);
 				updateBalance(accounts[0]);
 			},
-			(_networkId: number) => {
+			async (_networkId: number) => {
+				await updateBalance(account);
 				setNetwork(networkName(_networkId));
 			}
 		);

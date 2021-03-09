@@ -188,11 +188,10 @@ export class MoonbeamLib {
 				if (onAccountsChanged) {
 					const accountsRead = await this.web3.eth.getAccounts(); // this.wallet.getAccounts();
 					onAccountsChanged(accountsRead);
-					if (localStorage) {
-						localStorage.setItem('MoonbeamWebSigner', 'metamask');
-					}
+					// if (localStorage) {
+					// 	localStorage.setItem('MoonbeamWebSigner', 'metamask');
+					// }
 					ethereum.on('accountsChanged', (accounts: string[]) => {
-						console.log('accountsChanged', accounts);
 						onAccountsChanged(accounts);
 						// Handle the new accounts, or lack thereof.
 						// "accounts" will always be an array, but it can be empty.
