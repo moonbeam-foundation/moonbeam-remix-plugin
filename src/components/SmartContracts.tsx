@@ -176,7 +176,7 @@ const ContractCard: React.FunctionComponent<{
 		danger: '#dc3545',
 	};
 
-	function DrawMathods() {
+	function DrawMethods() {
 		const list = contract.abi ? contract.abi : [];
 		const items = list.map((abi: AbiItem, id: number) => (
 			<Accordion key={`Methods_A_${index.toString()}`}>
@@ -185,7 +185,7 @@ const ContractCard: React.FunctionComponent<{
 						style={{ color: 'white', backgroundColor: colors[buttonVariant(abi.stateMutability)] }}
 						as={Card.Header}
 						eventKey={`Methods_${id}`}
-						className="p-1"
+						className="p-1  custom-select"
 					>
 						<small>{abi.name}</small>
 					</Accordion.Toggle>
@@ -211,7 +211,7 @@ const ContractCard: React.FunctionComponent<{
 	return (
 		<CSSTransition in={enable} timeout={300} classNames="zoom" unmountOnExit onExited={remove}>
 			<Card className="mb-2">
-				<Accordion.Toggle as={Card.Header} eventKey="0" className="px-2 py-1">
+				<Accordion.Toggle as={Card.Header} eventKey="0" className="px-2 py-1 form-control custom-select">
 					<strong className="align-middle">{contract.name}</strong>
 					&nbsp;
 					<small className="align-middle">{`${contract.address.substring(0, 6)}...${contract.address.substring(
@@ -227,18 +227,8 @@ const ContractCard: React.FunctionComponent<{
 					>
 						<i className="far fa-copy" />
 					</Button>
-					{/* <Button
-						className="float-right align-middle"
-						size="sm"
-						variant="link"
-						onClick={() => {
-							window.open(`${blockscout}/address/${contract.address}`);
-						}}
-					>
-						<i className="fas fa-external-link-alt" />
-					</Button> */}
 					<Button
-						className="float-right align-middle"
+						className="float-left align-middle"
 						size="sm"
 						variant="link"
 						onClick={() => {
@@ -249,7 +239,7 @@ const ContractCard: React.FunctionComponent<{
 					</Button>
 				</Accordion.Toggle>
 				<Accordion.Collapse eventKey="0">
-					<Card.Body>{DrawMathods()} </Card.Body>
+					<Card.Body>{DrawMethods()} </Card.Body>
 				</Accordion.Collapse>
 			</Card>
 		</CSSTransition>

@@ -290,15 +290,21 @@ export class MoonbeamLib {
 		return this.web3.eth.getAccounts();
 	}
 
-	async sendTransaction(web3Tx: TransactionConfig): Promise<TransactionReceipt> {
-		console.log('mmm');
+	async sendTransaction(
+		web3Tx: TransactionConfig,
+		errCb: (errorMessage: string) => void
+	): Promise<TransactionReceipt | undefined> {
 		try {
 			// const txResult: TransactionResult = await this.kit.sendTransaction(web3Tx);
 			// return txResult.waitReceipt();
 			return await this.web3.eth.sendTransaction(web3Tx);
 		} catch (error) {
+			console.log(Object.keys(error));
 			console.log('he', error, 'ho');
-			throw new Error(error);
+			console.log('he', error.message, 'ho');
+			errCb(error.message);
+			return undefined;
+			// throw new Error(error);
 		}
 	}
 
@@ -313,7 +319,6 @@ export class MoonbeamLib {
 	// 		}
 	// 		return null;
 	// 	}
-
 	// 	recover(message: string, signature: string): Address {
 	// 		try {
 	// 			const result = this.kit.web3.eth.accounts.recover(this.kit.web3.utils.toHex(message), signature);

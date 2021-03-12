@@ -153,7 +153,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	async function onDeploy() {
 		if (!busy && moonbeamLib.isConnected && moonbeamLib.isMoonbeamNetwork) {
 			// gtag('deploy');
-			setBusy(true);
+			// setBusy(true);
 			setAddress('');
 			try {
 				const newContract = new moonbeamLib.web3.eth.Contract(
@@ -169,9 +169,13 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						.encodeABI(),
 				};
 				// console.log(rawTx)
-				const txReceipt = await moonbeamLib.sendTransaction(rawTx);
+				const txReceipt = await moonbeamLib.sendTransaction(rawTx, (errmsg: string) => {
+					console.log('errmsg', errmsg);
+					setErrors([{ message: errmsg, severity: 'error' }]);
+				});
+
 				// console.log(txReceipt)
-				if (txReceipt.contractAddress) {
+				if (txReceipt && txReceipt.contractAddress) {
 					setAddress(txReceipt.contractAddress);
 					addNewContract({
 						name: contractName,
@@ -183,17 +187,21 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 			} catch (e) {
 				// eslint-disable-next-line
 				console.error(e);
-
-				console.log('ok', '+', e.toString(), '+');
-				setErrors([
+				console.log(' e.message', '+', e.message, '+');
+				console.log(' e.message', '+', e, '+');
+				const errorMessage =
 					e.message && e.message === 'param.map is not a function'
 						? 'Constructor Input Missing'
 						: e.message
 						? e.message
-						: e.toString(),
-				]);
+						: e.toString();
+				console.log(errorMessage === ' [object Object] ', errorMessage === '[object Object]');
+				if (errorMessage !== '[object Object]') {
+					console.log('seterror');
+					setErrors([{ message: errorMessage, severity: e.severity ? e.severity : 'error' }]);
+				}
 			}
-			setBusy(false);
+			// setBusy(false);
 		}
 	}
 
@@ -234,6 +242,25 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						>
 							<i className="far fa-copy" />
 						</Button>
+						<div style={{ fontSize: '0.9em' }} className="float-right">
+							ABI
+						</div>
+						<Button
+							variant="link"
+							size="sm"
+							className="mt-0 pt-0 float-right"
+							disabled={!contracts.data[contractName]}
+							onClick={() => {
+								if (contracts.data[contractName]) {
+									copy(JSON.stringify(contracts.data[contractName].evm.bytecode.object, null, 4));
+								}
+							}}
+						>
+							<i className="far fa-copy" />
+						</Button>
+						<div style={{ fontSize: '0.9em' }} className="float-right">
+							ByteCode
+						</div>
 					</Form.Text>
 					<InputGroup>
 						<Form.Control
@@ -242,23 +269,10 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 							onChange={(e) => {
 								select(e.target.value);
 							}}
+							className="form-control custom-select"
 						>
 							{items}
 						</Form.Control>
-						<InputGroup.Append>
-							<small style={{ padding: '8px' }}>
-								<svg
-									xmlns="http://www.w3.org/2000/svg"
-									width="16"
-									height="16"
-									fill="currentColor"
-									className="bi bi-caret-down-fill"
-									viewBox="-8px 0 20 20"
-								>
-									<path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z" />
-								</svg>
-							</small>
-						</InputGroup.Append>
 					</InputGroup>
 				</Form.Group>
 			</Form>
