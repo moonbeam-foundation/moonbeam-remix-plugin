@@ -139,7 +139,7 @@ const App: React.FunctionComponent = () => {
 										<a
 											target="_blank"
 											rel="noreferrer"
-											href="https://docs.moonbeam.network/getting-started/testnet/connect/"
+											href="https://docs.moonbeam.network/getting-started/testnet/metamask/"
 										>
 											(instructions)
 										</a>
