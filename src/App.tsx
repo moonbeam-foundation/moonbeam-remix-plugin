@@ -137,7 +137,7 @@ const App: React.FunctionComponent = () => {
 									<small style={{ color: 'red' }}>
 										Connect MetaMask to a Moonbeam Network{' '}
 										<a
-											target="_blank"
+											target="_parent"
 											rel="noreferrer"
 											href="https://docs.moonbeam.network/getting-started/testnet/metamask/"
 										>

@@ -35,7 +35,8 @@
     "eject": "react-scripts eject",
     "prettier": "prettier --write --config ./.prettierrc \"**/*.{ts,tsx}\"",
     "lint": "eslint './src/**/*.{ts,tsx}'",
-    "lint:fix": "eslint --fix './src/**/*.{ts,tsx}'"
+    "lint:fix": "eslint --fix './src/**/*.{ts,tsx}'",
+    "publish-pages": "rm -fr docs && cp build docs"
   },
   "eslintConfig": {
     "extends": [

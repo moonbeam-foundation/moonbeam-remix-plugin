@@ -81,7 +81,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 							if (abi.stateMutability === 'view' || abi.stateMutability === 'pure') {
 								try {
 									const txReceipt = abi.name
-										? await newContract.methods[abi.name](...parms).call({ from: accounts[0] })
+										? await newContract.methods[abi.name](...parms).call({ from: accounts[0], gasPrice: 1e9 })
 										: null;
 									if (typeof txReceipt === 'object') {
 										setSuccess(JSON.stringify(txReceipt, null, 4));
@@ -96,7 +96,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 							} else {
 								try {
 									const txReceipt = abi.name
-										? await newContract.methods[abi.name](...parms).send({ from: accounts[0] })
+										? await newContract.methods[abi.name](...parms).send({ from: accounts[0], gasPrice: 1e9 })
 										: null;
 									// console.log(txReceipt)
 									setError('');
@@ -274,22 +274,24 @@ const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (p
 
 	function DrawContracts() {
 		const items = contracts.map((data: InterfaceContract, index: number) => (
-			<ContractCard
-				moonbeamLib={moonbeamLib}
-				busy={busy}
-				setBusy={setBusy}
-				// blockscout={blockscout}
-				contract={data}
-				index={index}
-				remove={() => {
-					setCount(count + 1);
-					setError(EMPTYLIST);
-				}}
-				updateBalance={updateBalance}
-				key={`Contract_${index.toString()}`}
-			/>
+			<Accordion defaultActiveKey={index.toString()}>
+				<ContractCard
+					moonbeamLib={moonbeamLib}
+					busy={busy}
+					setBusy={setBusy}
+					// blockscout={blockscout}
+					contract={data}
+					index={index}
+					remove={() => {
+						setCount(count + 1);
+						setError(EMPTYLIST);
+					}}
+					updateBalance={updateBalance}
+					key={`Contract_${index.toString()}`}
+				/>
+			</Accordion>
 		));
-		return <Accordion defaultActiveKey="0">{items}</Accordion>;
+		return <div>{items}</div>;
 	}
 
 	return (

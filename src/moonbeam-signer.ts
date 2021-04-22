@@ -69,7 +69,7 @@ export class MoonbeamLib {
 		onNetworkChanged: (networkId: number) => void
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
-			console.log('03/09/21');
+			console.log('Last updated: 04/22/21');
 			const { ethereum } = window as { [key: string]: any };
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
 			if (provider && provider.isMetaMask) {

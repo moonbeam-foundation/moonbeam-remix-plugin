@@ -1,13 +1,13 @@
 import React from 'react';
 import { Alert, Button, Card, Form, InputGroup } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
-import { AbiInput, AbiItem, jsonInterfaceMethodToString } from 'web3-utils';
+import { AbiInput, AbiItem } from 'web3-utils';
 import type { Api } from '@remixproject/plugin-utils';
-// import { Client } from '@remixproject/plugin';
 import { CompilationError, CompilationResult, IRemixApi } from '@remixproject/plugin-api';
 import { PluginClient } from '@remixproject/plugin';
 import { createClient } from '@remixproject/plugin-webview';
-// import { Celo } from '@dexfair/celo-web-signer';
+import { TransactionConfig } from 'web3-core';
+
 import { MoonbeamLib } from '../moonbeam-signer';
 import { InterfaceContract } from './Types';
 import Method from './Method';
@@ -80,7 +80,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 			temp.on(
 				'solidity',
 				'compilationFinished',
-				(fn: string, source: any, _languageVersion: string, data: CompilationResult) => {
+				(fn: string, _source: any, _languageVersion: string, data: CompilationResult) => {
 					// console.log(fn, source, languageVersion, data);
 					console.log('ok', _languageVersion);
 					setLangVersion(_languageVersion);
@@ -162,11 +162,12 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 				const accounts = await moonbeamLib.getAccounts();
 				console.log('constructor', constructor, 'args', args); // TODO check inputs
 				const parms: string[] = getArguments(constructor, args);
-				const rawTx = {
+				const rawTx: TransactionConfig = {
 					from: accounts[0],
 					data: newContract
 						.deploy({ data: `0x${contracts.data[contractName].evm.bytecode.object}`, arguments: parms })
 						.encodeABI(),
+					gasPrice: 1e9,
 				};
 				// console.log(rawTx)
 				const txReceipt = await moonbeamLib.sendTransaction(rawTx, (errmsg: string) => {
