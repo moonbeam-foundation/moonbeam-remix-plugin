@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/moonbeam-remix-plugin/static/css/main.bfcef086.chunk.css",
-    "main.js": "/moonbeam-remix-plugin/static/js/main.08f0e618.chunk.js",
-    "main.js.map": "/moonbeam-remix-plugin/static/js/main.08f0e618.chunk.js.map",
+    "main.js": "/moonbeam-remix-plugin/static/js/main.6fc99bb1.chunk.js",
+    "main.js.map": "/moonbeam-remix-plugin/static/js/main.6fc99bb1.chunk.js.map",
     "runtime-main.js": "/moonbeam-remix-plugin/static/js/runtime-main.7548654c.js",
     "runtime-main.js.map": "/moonbeam-remix-plugin/static/js/runtime-main.7548654c.js.map",
-    "static/js/2.d925551d.chunk.js": "/moonbeam-remix-plugin/static/js/2.d925551d.chunk.js",
-    "static/js/2.d925551d.chunk.js.map": "/moonbeam-remix-plugin/static/js/2.d925551d.chunk.js.map",
+    "static/js/2.21b5ae29.chunk.js": "/moonbeam-remix-plugin/static/js/2.21b5ae29.chunk.js",
+    "static/js/2.21b5ae29.chunk.js.map": "/moonbeam-remix-plugin/static/js/2.21b5ae29.chunk.js.map",
     "index.html": "/moonbeam-remix-plugin/index.html",
     "static/css/main.bfcef086.chunk.css.map": "/moonbeam-remix-plugin/static/css/main.bfcef086.chunk.css.map",
-    "static/js/2.d925551d.chunk.js.LICENSE.txt": "/moonbeam-remix-plugin/static/js/2.d925551d.chunk.js.LICENSE.txt"
+    "static/js/2.21b5ae29.chunk.js.LICENSE.txt": "/moonbeam-remix-plugin/static/js/2.21b5ae29.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.7548654c.js",
-    "static/js/2.d925551d.chunk.js",
+    "static/js/2.21b5ae29.chunk.js",
     "static/css/main.bfcef086.chunk.css",
-    "static/js/main.08f0e618.chunk.js"
+    "static/js/main.6fc99bb1.chunk.js"
   ]
 }
