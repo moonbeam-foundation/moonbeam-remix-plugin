@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Form, InputGroup, Tooltip, Button, OverlayTrigger } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
-import { NETWORKS, MoonbeamLib, NETWORKS_BY_IDS, networkName } from './moonbeam-signer';
+import { NETWORKS, MoonbeamLib, networkName } from './moonbeam-signer';
 import Compiler from './components/Compiler';
 import SmartContracts from './components/SmartContracts';
 import { InterfaceContract } from './components/Types';
@@ -17,7 +17,7 @@ const App: React.FunctionComponent = () => {
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 
-	async function connect() {
+	async function connect(toAlpha?: boolean) {
 		// if (!moonbeamLib.isConnected) {
 		setBusy(true);
 		// setBlockscout(NETWORKS[network].blockscout || '');
@@ -29,16 +29,10 @@ const App: React.FunctionComponent = () => {
 			async (_networkId: number) => {
 				await updateBalance(account);
 				setNetwork(networkName(_networkId));
-			}
+			},
+			toAlpha
 		);
 		setNetwork(networkName(networkId));
-		// For analytics
-		// if (result && (window as { [key: string]: any }).gtag) {
-		// 	const { gtag } = window as { [key: string]: any };
-		// 	gtag('event', 'login', {
-		// 		method: 'MetaMask',
-		// 	});
-		// }
 		setBusy(false);
 		// }
 	}
@@ -125,7 +119,7 @@ const App: React.FunctionComponent = () => {
 										</Tooltip>
 									}
 								>
-									<Button variant="warning" block size="sm" disabled={busy} onClick={connect}>
+									<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect()}>
 										<small>Connect</small>
 									</Button>
 								</OverlayTrigger>
@@ -134,14 +128,17 @@ const App: React.FunctionComponent = () => {
 						{moonbeamLib.isConnected ? (
 							network === 'Not Moonbeam' ? (
 								<p className="text-center mt-3">
-									<small style={{ color: 'red' }}>
-										Connect MetaMask to a Moonbeam Network{' '}
+									<small style={{ color: 'red', padding: '1em' }}>
+										Connect MetaMask to a Moonbeam Network :{' '}
+										<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(true)}>
+											Connect to Moonbase Alpha
+										</Button>
 										<a
 											target="_parent"
 											rel="noreferrer"
 											href="https://docs.moonbeam.network/getting-started/testnet/metamask/"
 										>
-											(instructions)
+											(How to connect to Moonbeam networks)
 										</a>
 									</small>
 								</p>

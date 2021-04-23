@@ -11,6 +11,14 @@ import './animation.css';
 
 const EMPTYLIST = 'Currently you have no contract instances to interact with.';
 
+const colors: { [key: string]: string } = {
+	primary: '#007aa6',
+	warning: '#c97539',
+	danger: '#dc3545',
+	lightgreen: '#a2ffb0',
+	darkgreen: '#27443f',
+};
+
 interface InterfaceDrawMethodProps {
 	moonbeamLib: MoonbeamLib;
 	busy: boolean;
@@ -61,7 +69,23 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 				<small>{error}</small>
 			</Alert>
 			<Alert variant="success" onClose={() => setSuccess('')} dismissible hidden={success === ''}>
-				<small>{success}</small>
+				<Accordion>
+					<Card style={{ border: '0' }}>
+						<Accordion.Toggle
+							style={{ backgroundColor: colors.darkgreen }}
+							as={Card.Header}
+							eventKey={success}
+							className="p-1  custom-select"
+						>
+							Tx Receipt
+						</Accordion.Toggle>
+						<Accordion.Collapse style={{ backgroundColor: colors.darkgreen }} eventKey={success}>
+							<Card.Body className="py-1 px-2">
+								<small>{success}</small>
+							</Card.Body>
+						</Accordion.Collapse>
+					</Card>
+				</Accordion>
 			</Alert>
 			<InputGroup className="mb-3">
 				<InputGroup.Prepend>
@@ -152,7 +176,6 @@ const ContractCard: React.FunctionComponent<{
 	moonbeamLib: MoonbeamLib;
 	busy: boolean;
 	setBusy: (state: boolean) => void;
-	// blockscout: string;
 	contract: InterfaceContract;
 	index: number;
 	remove: () => void;
@@ -170,26 +193,20 @@ const ContractCard: React.FunctionComponent<{
 		updateBalance,
 	} = props;
 
-	const colors: { [key: string]: string } = {
-		primary: '#007aa6', // '#007bff',
-		warning: '#c97539', // '#ffc107',
-		danger: '#dc3545',
-	};
-
-	function DrawMethods() {
+	function DrawMethods(indexOfContract: number) {
 		const list = contract.abi ? contract.abi : [];
 		const items = list.map((abi: AbiItem, id: number) => (
-			<Accordion key={`Methods_A_${index.toString()}`}>
+			<Accordion key={`Methods_A_${indexOfContract.toString()}_${id.toString()}`}>
 				<Card>
 					<Accordion.Toggle
 						style={{ color: 'white', backgroundColor: colors[buttonVariant(abi.stateMutability)] }}
 						as={Card.Header}
-						eventKey={`Methods_${id}`}
+						eventKey={`Methods_${indexOfContract.toString()}_${id.toString()}`}
 						className="p-1  custom-select"
 					>
 						<small>{abi.name}</small>
 					</Accordion.Toggle>
-					<Accordion.Collapse eventKey={`Methods_${id}`}>
+					<Accordion.Collapse eventKey={`Methods_${indexOfContract.toString()}_${id.toString()}`}>
 						<Card.Body className="py-1 px-2">
 							<DrawMethod
 								moonbeamLib={moonbeamLib}
@@ -204,7 +221,6 @@ const ContractCard: React.FunctionComponent<{
 				</Card>
 			</Accordion>
 		));
-		console.log(items);
 		return <>{items}</>;
 	}
 
@@ -239,7 +255,7 @@ const ContractCard: React.FunctionComponent<{
 					</Button>
 				</Accordion.Toggle>
 				<Accordion.Collapse eventKey="0">
-					<Card.Body>{DrawMethods()} </Card.Body>
+					<Card.Body>{DrawMethods(index)} </Card.Body>
 				</Accordion.Collapse>
 			</Card>
 		</CSSTransition>

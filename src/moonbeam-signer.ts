@@ -15,19 +15,21 @@ export const NETWORKS: { [key: string]: Network } = {
 		provider: 'https://rpc.testnet.moonbeam.network',
 		// blockscout: 'https://explorer.celo.org',
 	},
-	'Moonbeam Standalone': {
+	'Moonbeam Dev': {
 		provider: 'http://127.0.0.1:9933',
 	},
 };
 
-export const NETWORKS_BY_IDS: { [key: string]: { name: string; url: string } } = {
+export interface NetworkById {
+	[key: string]: { name: string };
+}
+
+export const NETWORKS_BY_IDS: NetworkById = {
 	'1287': {
 		name: 'Moonbase Alpha',
-		url: 'https://rpc.testnet.moonbeam.network',
 	},
 	'1281': {
-		name: 'Moonbeam Standalone',
-		url: 'http://127.0.0.1:9933',
+		name: 'Moonbeam Dev',
 	},
 };
 
@@ -47,15 +49,11 @@ export class MoonbeamLib {
 
 	public web3: Web3;
 
-	private network: Network;
-
 	public contracts: any = {
 		erc20: null,
 	};
 
 	constructor(network: Network) {
-		this.network = network;
-		// this.kit = newKit(this.network.provider);
 		this.web3 = new Web3(network.provider);
 		this.contracts.erc20 = new this.web3.eth.Contract(ERC20ABI);
 	}
@@ -66,15 +64,34 @@ export class MoonbeamLib {
 
 	async connectMetaMask(
 		onAccountsChanged: (accounts: Address[]) => void,
-		onNetworkChanged: (networkId: number) => void
+		onNetworkChanged: (networkId: number) => void,
+		toAlpha?: boolean
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
 			console.log('Last updated: 04/22/21');
 			const { ethereum } = window as { [key: string]: any };
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
+			console.log('PROVIDER', provider);
 			if (provider && provider.isMetaMask) {
 				// Enable MetaMask accounts
 				const accountsRead = await ethereum.request({ method: 'eth_requestAccounts' });
+				if (toAlpha) {
+					await provider.request({
+						method: 'wallet_addEthereumChain',
+						params: [
+							{
+								chainId: '0x507',
+								chainName: 'Moonbase Alpha',
+								nativeCurrency: {
+									name: 'DEV',
+									symbol: 'DEV',
+									decimals: 18,
+								},
+								rpcUrls: ['https://rpc.testnet.moonbeam.network'],
+							},
+						],
+					});
+				}
 
 				const web3 = new Web3(provider);
 				this.web3 = web3;
@@ -86,13 +103,10 @@ export class MoonbeamLib {
 						onAccountsChanged(accounts);
 					});
 
-					ethereum.on('chainChanged', (chainId: string) => {
+					ethereum.on('chainChanged', async (chainId: string) => {
 						console.log('chainChanged', chainId, hexToNumber(chainId));
 						onNetworkChanged(Number(chainId));
-						// Handle the new chain.
-						// Correctly handling chain changes can be complicated.
-						// We recommend reloading the page unless you have good reason not to.
-						window.location.reload();
+						await this.connectMetaMask(onAccountsChanged, onNetworkChanged);
 					});
 				}
 				this.isConnected = true;
@@ -104,7 +118,6 @@ export class MoonbeamLib {
 		const networkId = await this.web3.eth.net.getId();
 		if (NETWORKS_BY_IDS[networkId]) {
 			this.isMoonbeamNetwork = true;
-			this.network = { provider: NETWORKS_BY_IDS[networkId].url };
 		}
 		return { isConnected: this.isConnected, networkId };
 	}
