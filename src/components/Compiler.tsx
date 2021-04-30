@@ -253,7 +253,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 							disabled={!contracts.data[contractName]}
 							onClick={() => {
 								if (contracts.data[contractName]) {
-									copy(JSON.stringify(contracts.data[contractName].evm.bytecode.object, null, 4));
+									copy(JSON.stringify(contracts.data[contractName].evm.bytecode, null, 4));
 								}
 							}}
 						>

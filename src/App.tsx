@@ -18,9 +18,7 @@ const App: React.FunctionComponent = () => {
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 
 	async function connect(toAlpha?: boolean) {
-		// if (!moonbeamLib.isConnected) {
 		setBusy(true);
-		// setBlockscout(NETWORKS[network].blockscout || '');
 		const { networkId } = await moonbeamLib.connectMetaMask(
 			(accounts: string[]) => {
 				setAccount(accounts[0]);
@@ -34,7 +32,6 @@ const App: React.FunctionComponent = () => {
 		);
 		setNetwork(networkName(networkId));
 		setBusy(false);
-		// }
 	}
 
 	async function updateBalance(address: string) {

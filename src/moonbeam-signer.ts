@@ -68,50 +68,65 @@ export class MoonbeamLib {
 		toAlpha?: boolean
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
-			console.log('Last updated: 04/22/21');
-			const { ethereum } = window as { [key: string]: any };
+			console.log('Last updated: 04/27/21');
+			// const { ethereum } = window as { [key: string]: any };
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
 			console.log('PROVIDER', provider);
 			if (provider && provider.isMetaMask) {
-				// Enable MetaMask accounts
-				const accountsRead = await ethereum.request({ method: 'eth_requestAccounts' });
-				if (toAlpha) {
-					await provider.request({
-						method: 'wallet_addEthereumChain',
-						params: [
-							{
-								chainId: '0x507',
-								chainName: 'Moonbase Alpha',
-								nativeCurrency: {
-									name: 'DEV',
-									symbol: 'DEV',
-									decimals: 18,
+				try {
+					// initiate web3
+					const web3 = new Web3(provider);
+					this.web3 = web3;
+
+					// Enable MetaMask accounts
+					const accountsRead = await provider.request({ method: 'eth_requestAccounts' });
+					// const accountsRead = await web3.eth.getAccounts();
+					if (toAlpha) {
+						await provider.request({
+							method: 'wallet_addEthereumChain',
+							params: [
+								{
+									chainId: '0x507',
+									chainName: 'Moonbase Alpha',
+									nativeCurrency: {
+										name: 'DEV',
+										symbol: 'DEV',
+										decimals: 18,
+									},
+									rpcUrls: ['https://rpc.testnet.moonbeam.network'],
+									blockExplorerUrls: ['https://moonbase-blockscout.testnet.moonbeam.network/'],
 								},
-								rpcUrls: ['https://rpc.testnet.moonbeam.network'],
-							},
-						],
-					});
+							],
+						});
+					}
+
+					if (onAccountsChanged) {
+						onAccountsChanged(accountsRead);
+						provider.on('accountsChanged', async (accounts: string[]) => {
+							if (accounts.length > 0) {
+								const accountsReadAgain = await provider.request({ method: 'eth_accounts' });
+								// const accountsReadAgain = await web3.eth.getAccounts();
+								console.log('accountsChanged', accountsReadAgain);
+								onAccountsChanged(accountsReadAgain);
+							} else {
+								window.location.reload();
+							}
+						});
+
+						provider.on('chainChanged', async (chainId: string) => {
+							console.log('chainChanged', chainId, hexToNumber(chainId));
+							onNetworkChanged(Number(chainId));
+							await this.connectMetaMask(onAccountsChanged, onNetworkChanged);
+						});
+					}
+					this.isConnected = true;
+				} catch (e) {
+					if (e.code !== 4001) {
+						throw new Error(e.message);
+					}
 				}
-
-				const web3 = new Web3(provider);
-				this.web3 = web3;
-
-				if (onAccountsChanged) {
-					onAccountsChanged(accountsRead);
-					ethereum.on('accountsChanged', (accounts: string[]) => {
-						console.log('accountsChanged', accounts);
-						onAccountsChanged(accounts);
-					});
-
-					ethereum.on('chainChanged', async (chainId: string) => {
-						console.log('chainChanged', chainId, hexToNumber(chainId));
-						onNetworkChanged(Number(chainId));
-						await this.connectMetaMask(onAccountsChanged, onNetworkChanged);
-					});
-				}
-				this.isConnected = true;
 			} else {
-				throw new Error('other ethereum wallet did not support.');
+				throw new Error('Other ethereum wallet did not support.');
 			}
 		}
 		// console.log('net id', await this.web3.eth.net.getId());
