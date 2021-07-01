@@ -3,7 +3,6 @@ import { Alert, Accordion, Button, Card, Form, InputGroup } from 'react-bootstra
 import copy from 'copy-to-clipboard';
 import { CSSTransition } from 'react-transition-group';
 import { AbiInput, AbiItem } from 'web3-utils';
-// import { MoonbeamLib } from '@dexfair/moonbeamLib-web-signer';
 import { MoonbeamLib } from '../moonbeam-signer';
 import { InterfaceContract } from './Types';
 import Method from './Method';
@@ -47,7 +46,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 	const [success, setSuccess] = React.useState<string>('');
 	const [value, setValue] = React.useState<string>('');
 	const [args, setArgs] = React.useState<{ [key: string]: string }>({});
-	const { moonbeamLib, busy, /* setBusy, */ abi, address, updateBalance } = props;
+	const { moonbeamLib, busy,setBusy, abi, address, updateBalance } = props;
 
 	React.useEffect(() => {
 		const temp: { [key: string]: string } = {};
@@ -95,7 +94,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 						size="sm"
 						disabled={busy || !(moonbeamLib && moonbeamLib.isConnected && moonbeamLib.isMoonbeamNetwork)}
 						onClick={async () => {
-							// setBusy(true)
+							setBusy(true)
 							const parms: string[] = [];
 							abi.inputs?.forEach((item: AbiInput) => {
 								parms.push(args[item.name]);
@@ -132,7 +131,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 									setError(e.message ? e.message : e.toString());
 								}
 							}
-							// setBusy(false)
+							setBusy(false)
 						}}
 					>
 						<small>{abi.stateMutability === 'view' || abi.stateMutability === 'pure' ? 'call' : 'transact'}</small>
@@ -186,7 +185,6 @@ const ContractCard: React.FunctionComponent<{
 		moonbeamLib,
 		busy,
 		setBusy,
-		// blockscout,
 		contract,
 		index,
 		remove,
@@ -266,7 +264,6 @@ interface InterfaceSmartContractsProps {
 	moonbeamLib: MoonbeamLib;
 	busy: boolean;
 	setBusy: (state: boolean) => void;
-	// blockscout: string;
 	contracts: InterfaceContract[];
 	updateBalance: (address: string) => void;
 }
@@ -278,7 +275,6 @@ const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (p
 		moonbeamLib,
 		busy,
 		setBusy,
-		// blockscout,
 		contracts,
 		updateBalance,
 	} = props;

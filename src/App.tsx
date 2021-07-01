@@ -10,7 +10,6 @@ const App: React.FunctionComponent = () => {
 	const [account, setAccount] = React.useState<string>('');
 	const [balance, setBalance] = React.useState<string>('');
 	const [network, setNetwork] = React.useState<string>('Moonbase Alpha');
-	// const [blockscout, setBlockscout] = React.useState<string>('');
 	const [busy, setBusy] = React.useState<boolean>(false);
 	const [moonbeamLib] = React.useState<MoonbeamLib>(new MoonbeamLib(NETWORKS['Moonbase Alpha']));
 	const [atAddress, setAtAddress] = React.useState<string>('');
@@ -40,21 +39,6 @@ const App: React.FunctionComponent = () => {
 			setBalance(moonbeamLib.web3.utils.fromWei(readBalance.toString()));
 		}
 	}
-
-	// async function changeNetwork(e: React.ChangeEvent<HTMLInputElement>) {
-	// 	setBusy(true);
-	// 	setContracts([]);
-	// 	const temp = e.target.value;
-	// 	if (NETWORKS[temp]) {
-	// 		setNetwork(temp);
-	// 		setBlockscout(NETWORKS[temp].blockscout || '');
-	// 		await moonbeamLib.changeNetwork(NETWORKS[temp]);
-	// 		await updateBalance(account);
-	// 	} else {
-	// 		setNetwork('Not Moonbeam');
-	// 	}
-	// 	setBusy(false);
-	// }
 
 	function addNewContract(contract: InterfaceContract) {
 		setContracts(contracts.concat([contract]));
@@ -214,7 +198,6 @@ const App: React.FunctionComponent = () => {
 					moonbeamLib={moonbeamLib}
 					busy={busy}
 					setBusy={setBusy}
-					// blockscout={blockscout}
 					contracts={contracts}
 					updateBalance={updateBalance}
 				/>
