@@ -62,6 +62,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	const [errors, setErrors] = React.useState<CompilationErrorFormatted[]>([]);
 	const [autoCompiler, setAutoCompiler] = React.useState<boolean>(false);
 	const [languageVersion, setLangVersion] = React.useState<string>('');
+	const [txValue, setTxValue] = React.useState<number>(0);
 
 	const {
 		moonbeamLib,
@@ -81,8 +82,6 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 				'solidity',
 				'compilationFinished',
 				(fn: string, _source: any, _languageVersion: string, data: CompilationResult) => {
-					// console.log(fn, source, languageVersion, data);
-					console.log('ok', _languageVersion);
 					setLangVersion(_languageVersion);
 					if (data.errors) {
 						console.log('data.errors', data.errors);
@@ -153,14 +152,14 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	async function onDeploy() {
 		if (!busy && moonbeamLib.isConnected && moonbeamLib.isMoonbeamNetwork) {
 			// gtag('deploy');
-			// setBusy(true);
+			setBusy(true);
 			setAddress('');
 			try {
 				const newContract = new moonbeamLib.web3.eth.Contract(
 					JSON.parse(JSON.stringify(contracts.data[contractName].abi))
 				);
 				const accounts = await moonbeamLib.getAccounts();
-				console.log('constructor', constructor, 'args', args); // TODO check inputs
+
 				const parms: string[] = getArguments(constructor, args);
 				const rawTx: TransactionConfig = {
 					from: accounts[0],
@@ -168,14 +167,14 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						.deploy({ data: `0x${contracts.data[contractName].evm.bytecode.object}`, arguments: parms })
 						.encodeABI(),
 					gasPrice: 1e9,
+					value: txValue,
 				};
-				// console.log(rawTx)
+
 				const txReceipt = await moonbeamLib.sendTransaction(rawTx, (errmsg: string) => {
 					console.log('errmsg', errmsg);
 					setErrors([{ message: errmsg, severity: 'error' }]);
 				});
 
-				// console.log(txReceipt)
 				if (txReceipt && txReceipt.contractAddress) {
 					setAddress(txReceipt.contractAddress);
 					addNewContract({
@@ -202,7 +201,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 					setErrors([{ message: errorMessage, severity: e.severity ? e.severity : 'error' }]);
 				}
 			}
-			// setBusy(false);
+			setBusy(false);
 		}
 	}
 
@@ -214,17 +213,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 				{`${key} - ${value}`}
 			</option>
 		));
-		// <Button
-		// 								variant="link"
-		// 								size="sm"
-		// 								className="mt-0 pt-0 float-right"
-		// 								disabled={!address}
-		// 								onClick={() => {
-		// 									copy(address);
-		// 								}}
-		// 							>
-		// 								<i className="far fa-copy" />
-		// 							</Button>
+
 		return (
 			<Form>
 				<Form.Group>
@@ -280,20 +269,6 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 		);
 	}
 
-	// {/* <InputGroup className="mb-3">
-	// 	<InputGroup.Prepend>
-	// 		<Form.Check
-	// 			type="checkbox"
-	// 			label="Auto-Compile"
-	// 			onClick={async () => {
-	// 				await setAutoCompiler(!autoCompiler);
-	// 			}}
-	// 		/>
-	// 	</InputGroup.Prepend>
-	// 	<InputGroup.Append>
-	// 		<small>{languageVersion}</small>
-	// 	</InputGroup.Append>
-	// </InputGroup> */}
 	return (
 		<div className="Compiler">
 			<Form.Group>
@@ -331,6 +306,8 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						setArgs={(name: string, value: string) => {
 							args[name] = value;
 						}}
+						txValue={txValue}
+						setTxValue={setTxValue}
 					/>
 					{errors.map((error, i) => {
 						console.log('error', error);

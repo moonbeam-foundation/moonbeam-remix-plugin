@@ -44,9 +44,10 @@ function buttonVariant(stateMutability: string | undefined): string {
 const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) => {
 	const [error, setError] = React.useState<string>('');
 	const [success, setSuccess] = React.useState<string>('');
-	const [value, setValue] = React.useState<string>('');
+	const [receipt, setReceipt] = React.useState<string>('');
 	const [args, setArgs] = React.useState<{ [key: string]: string }>({});
-	const { moonbeamLib, busy,setBusy, abi, address, updateBalance } = props;
+	const [txValue, setTxValue] = React.useState<number>(0);
+	const { moonbeamLib, busy, setBusy, abi, address, updateBalance } = props;
 
 	React.useEffect(() => {
 		const temp: { [key: string]: string } = {};
@@ -60,9 +61,11 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 		<>
 			<Method
 				abi={abi}
-				setArgs={(name: string, value2: string) => {
-					args[name] = value2;
+				setArgs={(name: string, value: string) => {
+					args[name] = value;
 				}}
+				txValue={txValue}
+				setTxValue={setTxValue}
 			/>
 			<Alert variant="danger" onClose={() => setError('')} dismissible hidden={error === ''}>
 				<small>{error}</small>
@@ -94,7 +97,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 						size="sm"
 						disabled={busy || !(moonbeamLib && moonbeamLib.isConnected && moonbeamLib.isMoonbeamNetwork)}
 						onClick={async () => {
-							setBusy(true)
+							setBusy(true);
 							const parms: string[] = [];
 							abi.inputs?.forEach((item: AbiInput) => {
 								parms.push(args[item.name]);
@@ -109,7 +112,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 									if (typeof txReceipt === 'object') {
 										setSuccess(JSON.stringify(txReceipt, null, 4));
 									} else {
-										setValue(txReceipt);
+										setReceipt(txReceipt);
 									}
 									// TODO: LOG
 								} catch (e) {
@@ -119,9 +122,12 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 							} else {
 								try {
 									const txReceipt = abi.name
-										? await newContract.methods[abi.name](...parms).send({ from: accounts[0], gasPrice: 1e9 })
+										? await newContract.methods[abi.name](...parms).send({
+												from: accounts[0],
+												gasPrice: 1e9,
+												value: txValue,
+										  })
 										: null;
-									// console.log(txReceipt)
 									setError('');
 									setSuccess(JSON.stringify(txReceipt, null, 2));
 									updateBalance(accounts[0]);
@@ -131,7 +137,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 									setError(e.message ? e.message : e.toString());
 								}
 							}
-							setBusy(false)
+							setBusy(false);
 						}}
 					>
 						<small>{abi.stateMutability === 'view' || abi.stateMutability === 'pure' ? 'call' : 'transact'}</small>
@@ -161,7 +167,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 					</Button>
 				</InputGroup.Prepend>
 				<Form.Control
-					value={value}
+					value={receipt}
 					size="sm"
 					readOnly
 					hidden={!(abi.stateMutability === 'view' || abi.stateMutability === 'pure')}
@@ -181,15 +187,7 @@ const ContractCard: React.FunctionComponent<{
 	updateBalance: (address: string) => void;
 }> = (props) => {
 	const [enable, setEnable] = React.useState<boolean>(true);
-	const {
-		moonbeamLib,
-		busy,
-		setBusy,
-		contract,
-		index,
-		remove,
-		updateBalance,
-	} = props;
+	const { moonbeamLib, busy, setBusy, contract, index, remove, updateBalance } = props;
 
 	function DrawMethods(indexOfContract: number) {
 		const list = contract.abi ? contract.abi : [];
@@ -271,13 +269,7 @@ interface InterfaceSmartContractsProps {
 const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (props) => {
 	const [error, setError] = React.useState<string>('');
 	const [count, setCount] = React.useState<number>(0);
-	const {
-		moonbeamLib,
-		busy,
-		setBusy,
-		contracts,
-		updateBalance,
-	} = props;
+	const { moonbeamLib, busy, setBusy, contracts, updateBalance } = props;
 
 	React.useEffect(() => {
 		setCount(0);
@@ -291,7 +283,6 @@ const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (p
 					moonbeamLib={moonbeamLib}
 					busy={busy}
 					setBusy={setBusy}
-					// blockscout={blockscout}
 					contract={data}
 					index={index}
 					remove={() => {
