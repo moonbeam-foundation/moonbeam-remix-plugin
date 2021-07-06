@@ -3,6 +3,7 @@ import { Alert, Accordion, Button, Card, Form, InputGroup } from 'react-bootstra
 import copy from 'copy-to-clipboard';
 import { CSSTransition } from 'react-transition-group';
 import { AbiInput, AbiItem } from 'web3-utils';
+import BN from 'bn.js';
 import { MoonbeamLib } from '../moonbeam-signer';
 import { InterfaceContract } from './Types';
 import Method from './Method';
@@ -25,6 +26,7 @@ interface InterfaceDrawMethodProps {
 	abi: AbiItem;
 	address: string;
 	updateBalance: (address: string) => void;
+	txValue: BN;
 }
 function buttonVariant(stateMutability: string | undefined): string {
 	switch (stateMutability) {
@@ -46,8 +48,7 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 	const [success, setSuccess] = React.useState<string>('');
 	const [receipt, setReceipt] = React.useState<string>('');
 	const [args, setArgs] = React.useState<{ [key: string]: string }>({});
-	const [txValue, setTxValue] = React.useState<number>(0);
-	const { moonbeamLib, busy, setBusy, abi, address, updateBalance } = props;
+	const { moonbeamLib, busy, setBusy, abi, address, updateBalance, txValue } = props;
 
 	React.useEffect(() => {
 		const temp: { [key: string]: string } = {};
@@ -64,8 +65,6 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 				setArgs={(name: string, value: string) => {
 					args[name] = value;
 				}}
-				txValue={txValue}
-				setTxValue={setTxValue}
 			/>
 			<Alert variant="danger" onClose={() => setError('')} dismissible hidden={error === ''}>
 				<small>{error}</small>
@@ -185,9 +184,10 @@ const ContractCard: React.FunctionComponent<{
 	index: number;
 	remove: () => void;
 	updateBalance: (address: string) => void;
+	txValue: BN;
 }> = (props) => {
 	const [enable, setEnable] = React.useState<boolean>(true);
-	const { moonbeamLib, busy, setBusy, contract, index, remove, updateBalance } = props;
+	const { moonbeamLib, busy, setBusy, contract, index, remove, updateBalance, txValue } = props;
 
 	function DrawMethods(indexOfContract: number) {
 		const list = contract.abi ? contract.abi : [];
@@ -211,6 +211,7 @@ const ContractCard: React.FunctionComponent<{
 								abi={abi}
 								address={contract.address}
 								updateBalance={updateBalance}
+								txValue={txValue}
 							/>
 						</Card.Body>
 					</Accordion.Collapse>
@@ -264,12 +265,13 @@ interface InterfaceSmartContractsProps {
 	setBusy: (state: boolean) => void;
 	contracts: InterfaceContract[];
 	updateBalance: (address: string) => void;
+	txValue: BN;
 }
 
 const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (props) => {
 	const [error, setError] = React.useState<string>('');
 	const [count, setCount] = React.useState<number>(0);
-	const { moonbeamLib, busy, setBusy, contracts, updateBalance } = props;
+	const { moonbeamLib, busy, setBusy, contracts, updateBalance, txValue } = props;
 
 	React.useEffect(() => {
 		setCount(0);
@@ -291,6 +293,7 @@ const SmartContracts: React.FunctionComponent<InterfaceSmartContractsProps> = (p
 					}}
 					updateBalance={updateBalance}
 					key={`Contract_${index.toString()}`}
+					txValue={txValue}
 				/>
 			</Accordion>
 		));

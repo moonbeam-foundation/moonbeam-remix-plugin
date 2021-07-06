@@ -7,6 +7,7 @@ import { CompilationError, CompilationResult, IRemixApi } from '@remixproject/pl
 import { PluginClient } from '@remixproject/plugin';
 import { createClient } from '@remixproject/plugin-webview';
 import { TransactionConfig } from 'web3-core';
+import BN from 'bn.js';
 
 import { MoonbeamLib } from '../moonbeam-signer';
 import { InterfaceContract } from './Types';
@@ -40,6 +41,7 @@ interface InterfaceProps {
 	addNewContract: (contract: InterfaceContract) => void; // for SmartContracts
 	setSelected: (select: InterfaceContract) => void; // for At Address
 	updateBalance: (address: string) => void;
+	txValue: BN;
 }
 
 interface CompilationErrorFormatted {
@@ -62,7 +64,6 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 	const [errors, setErrors] = React.useState<CompilationErrorFormatted[]>([]);
 	const [autoCompiler, setAutoCompiler] = React.useState<boolean>(false);
 	const [languageVersion, setLangVersion] = React.useState<string>('');
-	const [txValue, setTxValue] = React.useState<number>(0);
 
 	const {
 		moonbeamLib,
@@ -72,6 +73,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 		addNewContract,
 		setSelected,
 		updateBalance,
+		txValue,
 	} = props;
 
 	React.useEffect(() => {
@@ -306,8 +308,6 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 						setArgs={(name: string, value: string) => {
 							args[name] = value;
 						}}
-						txValue={txValue}
-						setTxValue={setTxValue}
 					/>
 					{errors.map((error, i) => {
 						console.log('error', error);
