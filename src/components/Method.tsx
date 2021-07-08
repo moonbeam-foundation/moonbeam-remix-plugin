@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 import { AbiInput, AbiItem } from 'web3-utils';
+import BN from 'bn.js';
 
 interface InterfaceProps {
 	abi: AbiItem | null;

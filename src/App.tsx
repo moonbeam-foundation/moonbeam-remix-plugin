@@ -1,21 +1,23 @@
 import React from 'react';
 import { Container, Form, InputGroup, Tooltip, Button, OverlayTrigger } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
+import BN from 'bn.js';
 import { NETWORKS, MoonbeamLib, networkName } from './moonbeam-signer';
 import Compiler from './components/Compiler';
 import SmartContracts from './components/SmartContracts';
 import { InterfaceContract } from './components/Types';
+import TxValue from './components/TxValue';
 
 const App: React.FunctionComponent = () => {
 	const [account, setAccount] = React.useState<string>('');
 	const [balance, setBalance] = React.useState<string>('');
 	const [network, setNetwork] = React.useState<string>('Moonbase Alpha');
-	// const [blockscout, setBlockscout] = React.useState<string>('');
 	const [busy, setBusy] = React.useState<boolean>(false);
 	const [moonbeamLib] = React.useState<MoonbeamLib>(new MoonbeamLib(NETWORKS['Moonbase Alpha']));
 	const [atAddress, setAtAddress] = React.useState<string>('');
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
+	const [txValue, setTxValue] = React.useState<BN>(new BN(0));
 
 	async function connect(toAlpha?: boolean) {
 		setBusy(true);
@@ -41,32 +43,11 @@ const App: React.FunctionComponent = () => {
 		}
 	}
 
-	// async function changeNetwork(e: React.ChangeEvent<HTMLInputElement>) {
-	// 	setBusy(true);
-	// 	setContracts([]);
-	// 	const temp = e.target.value;
-	// 	if (NETWORKS[temp]) {
-	// 		setNetwork(temp);
-	// 		setBlockscout(NETWORKS[temp].blockscout || '');
-	// 		await moonbeamLib.changeNetwork(NETWORKS[temp]);
-	// 		await updateBalance(account);
-	// 	} else {
-	// 		setNetwork('Not Moonbeam');
-	// 	}
-	// 	setBusy(false);
-	// }
-
 	function addNewContract(contract: InterfaceContract) {
 		setContracts(contracts.concat([contract]));
 	}
 
 	function Networks() {
-		// const list = NETWORKS;
-		// const items = Object.keys(list).map((key) => (
-		// 	<option key={key} value={key}>
-		// 		{key}
-		// 	</option>
-		// ));
 		return (
 			<Form.Group>
 				<Form.Text className="text-muted">
@@ -75,9 +56,6 @@ const App: React.FunctionComponent = () => {
 				<InputGroup>
 					<Form.Control type="text" placeholder="0.0" value={network} size="sm" readOnly />
 				</InputGroup>
-				{/* <Form.Control as="select" value={network} onChange={changeNetwork} disabled={!moonbeamLib.isConnected}>
-					{items}
-				</Form.Control> */}
 			</Form.Group>
 		);
 	}
@@ -159,6 +137,7 @@ const App: React.FunctionComponent = () => {
 						</InputGroup>
 					</Form.Group>
 					<Networks />
+					{TxValue(setTxValue)}
 				</Form>
 				<hr />
 				<Compiler
@@ -173,6 +152,7 @@ const App: React.FunctionComponent = () => {
 					addNewContract={addNewContract}
 					setSelected={setSelected}
 					updateBalance={updateBalance}
+					txValue={txValue}
 				/>
 				<p className="text-center mt-3">
 					<small>OR</small>
@@ -214,9 +194,9 @@ const App: React.FunctionComponent = () => {
 					moonbeamLib={moonbeamLib}
 					busy={busy}
 					setBusy={setBusy}
-					// blockscout={blockscout}
 					contracts={contracts}
 					updateBalance={updateBalance}
+					txValue={txValue}
 				/>
 			</Container>
 		</div>
