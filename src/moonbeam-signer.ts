@@ -12,7 +12,7 @@ interface Network {
 
 export const NETWORKS: { [key: string]: Network } = {
 	'Moonbase Alpha': {
-		provider: 'https://rpc.testnet.moonbeam.network'
+		provider: 'https://rpc.testnet.moonbeam.network',
 	},
 	'Moonbeam Dev': {
 		provider: 'http://127.0.0.1:9933',
