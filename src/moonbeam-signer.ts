@@ -18,6 +18,12 @@ export const NETWORKS: { [key: string]: Network } = {
 	'Moonbeam Dev': {
 		provider: 'http://127.0.0.1:9933',
 	},
+	'Moonbase Local': {
+		provider: 'http://127.0.0.1:9933',
+	},
+	'Moonriver': {
+		provider: 'https://rpc.moonriver.moonbeam.network',
+	},
 };
 
 export interface NetworkById {
