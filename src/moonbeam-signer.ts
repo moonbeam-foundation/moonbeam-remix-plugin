@@ -28,6 +28,9 @@ export const NETWORKS_BY_IDS: NetworkById = {
 	'1287': {
 		name: 'Moonbase Alpha',
 	},
+	'1285': {
+		name: 'Moonriver',
+	},
 	'1281': {
 		name: 'Moonbeam Dev',
 	},
