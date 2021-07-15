@@ -1,5 +1,5 @@
 import Web3 from 'web3';
-import { AbiItem, hexToNumber } from 'web3-utils';
+import { AbiItem } from 'web3-utils';
 import { TransactionConfig, TransactionReceipt } from 'web3-core';
 import detectEthereumProvider from '@metamask/detect-provider';
 import { ERC20ABI as erc20 } from './erc20Abi';
@@ -13,7 +13,6 @@ interface Network {
 export const NETWORKS: { [key: string]: Network } = {
 	'Moonbase Alpha': {
 		provider: 'https://rpc.testnet.moonbeam.network',
-		// blockscout: 'https://explorer.celo.org',
 	},
 	'Moonbeam Dev': {
 		provider: 'http://127.0.0.1:9933',
@@ -70,7 +69,7 @@ export class MoonbeamLib {
 		this.contracts.erc20 = new this.web3.eth.Contract(ERC20ABI);
 	}
 
-	async getTotalBalance(address: string) {
+	async getTotalBalance(address: string): Promise<string> {
 		return this.web3.eth.getBalance(address);
 	}
 
@@ -80,10 +79,7 @@ export class MoonbeamLib {
 		toAlpha?: boolean
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
-			console.log('Last updated: 04/27/21');
-			// const { ethereum } = window as { [key: string]: any };
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
-			console.log('PROVIDER', provider);
 			if (provider && provider.isMetaMask) {
 				try {
 					// initiate web3
@@ -117,8 +113,6 @@ export class MoonbeamLib {
 						provider.on('accountsChanged', async (accounts: string[]) => {
 							if (accounts.length > 0) {
 								const accountsReadAgain = await provider.request({ method: 'eth_accounts' });
-								// const accountsReadAgain = await web3.eth.getAccounts();
-								console.log('accountsChanged', accountsReadAgain);
 								onAccountsChanged(accountsReadAgain);
 							} else {
 								window.location.reload();
@@ -126,7 +120,6 @@ export class MoonbeamLib {
 						});
 
 						provider.on('chainChanged', async (chainId: string) => {
-							console.log('chainChanged', chainId, hexToNumber(chainId));
 							onNetworkChanged(Number(chainId));
 							await this.connectMetaMask(onAccountsChanged, onNetworkChanged);
 						});
@@ -141,7 +134,6 @@ export class MoonbeamLib {
 				throw new Error('Other ethereum wallet did not support.');
 			}
 		}
-		// console.log('net id', await this.web3.eth.net.getId());
 		const networkId = await this.web3.eth.net.getId();
 		if (NETWORKS_BY_IDS[networkId]) {
 			this.isMoonbeamNetwork = true;
@@ -160,9 +152,6 @@ export class MoonbeamLib {
 		try {
 			return await this.web3.eth.sendTransaction(web3Tx);
 		} catch (error) {
-			console.log(Object.keys(error));
-			console.log('he', error, 'ho');
-			console.log('he', error.message, 'ho');
 			errCb(error.message);
 			return undefined;
 		}

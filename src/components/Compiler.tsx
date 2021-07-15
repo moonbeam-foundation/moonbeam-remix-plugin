@@ -107,7 +107,7 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 				setFileName(fn);
 			});
 			// auto compile
-			temp.on('fileManager', 'fileSaved', (fn: string) => {
+			temp.on('fileManager', 'fileSaved', () => {
 				if (autoCompiler) {
 					compile();
 				}
@@ -126,7 +126,6 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 
 	async function compile() {
 		setBusy(true);
-		console.log('COMPILE');
 		setIconSpin('fa-spin');
 		await client?.call('solidity', 'compile', fileName);
 		setIconSpin('');
@@ -189,15 +188,12 @@ const Compiler: React.FunctionComponent<InterfaceProps> = (props) => {
 			} catch (e) {
 				// eslint-disable-next-line
 				console.error(e);
-				console.log(' e.message', '+', e.message, '+');
-				console.log(' e.message', '+', e, '+');
 				const errorMessage =
 					e.message && e.message === 'param.map is not a function'
 						? 'Constructor Input Missing'
 						: e.message
 						? e.message
 						: e.toString();
-				console.log(errorMessage === ' [object Object] ', errorMessage === '[object Object]');
 				if (errorMessage !== '[object Object]') {
 					console.log('seterror');
 					setErrors([{ message: errorMessage, severity: e.severity ? e.severity : 'error' }]);

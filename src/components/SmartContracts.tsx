@@ -115,7 +115,6 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 									}
 									// TODO: LOG
 								} catch (e) {
-									// console.error(error)
 									setError(e.message ? e.message : e.toString());
 								}
 							} else {
@@ -132,7 +131,6 @@ const DrawMethod: React.FunctionComponent<InterfaceDrawMethodProps> = (props) =>
 									updateBalance(accounts[0]);
 									// TODO: LOG
 								} catch (e) {
-									// console.error(error)
 									setError(e.message ? e.message : e.toString());
 								}
 							}
