@@ -31,6 +31,9 @@ export const NETWORKS_BY_IDS: NetworkById = {
 	'1281': {
 		name: 'Moonbeam Dev',
 	},
+	'1280': {
+		name: 'Moonbase Local',
+	},
 };
 
 export const networkName = (networkId: number): string => {
