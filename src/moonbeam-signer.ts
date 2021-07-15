@@ -21,7 +21,7 @@ export const NETWORKS: { [key: string]: Network } = {
 	'Moonbase Local': {
 		provider: 'http://127.0.0.1:9933',
 	},
-	'Moonriver': {
+	Moonriver: {
 		provider: 'https://rpc.moonriver.moonbeam.network',
 	},
 };
