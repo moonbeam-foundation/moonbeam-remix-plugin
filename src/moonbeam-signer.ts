@@ -7,21 +7,27 @@ import { ERC20ABI as erc20 } from './erc20Abi';
 type Address = string;
 interface Network {
 	provider: string;
-	blockscout?: string;
+	explorer?: string;
 }
 
 export const NETWORKS: { [key: string]: Network } = {
 	'Moonbase Alpha': {
 		provider: 'https://rpc.api.moonbase.moonbeam.network',
+		explorer: 'https://moonbase.moonscan.io',
+	},
+	Moonriver: {
+		provider: 'https://rpc.api.moonriver.moonbeam.network',
+		explorer: 'https://moonriver.moonscan.io',
+	},
+	Moonbeam: {
+		provider: 'https://rpc.api.moonbeam.network',
+		explorer: 'https://moonbeam.moonscan.io',
 	},
 	'Moonbeam Dev': {
 		provider: 'http://127.0.0.1:9933',
 	},
 	'Moonbase Local': {
 		provider: 'http://127.0.0.1:9933',
-	},
-	Moonriver: {
-		provider: 'https://rpc.api.moonriver.moonbeam.network',
 	},
 };
 
@@ -35,6 +41,9 @@ export const NETWORKS_BY_IDS: NetworkById = {
 	},
 	'1285': {
 		name: 'Moonriver',
+	},
+	'1284': {
+		name: 'Moonbeam',
 	},
 	'1281': {
 		name: 'Moonbeam Dev',
@@ -101,7 +110,7 @@ export class MoonbeamLib {
 										symbol: 'DEV',
 										decimals: 18,
 									},
-									rpcUrls: ['https://rpc.testnet.moonbeam.network'],
+									rpcUrls: ['https://rpc.api.moonbase.moonbeam.network'],
 									blockExplorerUrls: ['https://moonbase-blockscout.testnet.moonbeam.network/'],
 								},
 							],
