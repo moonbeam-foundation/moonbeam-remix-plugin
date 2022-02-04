@@ -62,6 +62,42 @@ export const networkName = (networkId: number): string => {
 
 export const ERC20ABI: AbiItem[] = erc20;
 
+const NETWORK_CONFIGS: any = {
+	'Moonbase Alpha': {
+		chainId: '0x507',
+		chainName: 'Moonbase Alpha',
+		nativeCurrency: {
+			name: 'DEV',
+			symbol: 'DEV',
+			decimals: 18,
+		},
+		rpcUrls: ['https://rpc.api.moonbase.moonbeam.network'],
+		blockExplorerUrls: ['https://moonbase.moonscan.io/'],
+	},
+	Moonriver: {
+		chainId: '0x505',
+		chainName: 'Moonriver',
+		nativeCurrency: {
+			name: 'MOVR',
+			symbol: 'MOVR',
+			decimals: 18,
+		},
+		rpcUrls: ['https://rpc.api.moonriver.moonbeam.network'],
+		blockExplorerUrls: ['https://moonriver.moonscan.io/'],
+	},
+	Moonbeam: {
+		chainId: '0x504',
+		chainName: 'Moonbeam',
+		nativeCurrency: {
+			name: 'GLMR',
+			symbol: 'GLMR',
+			decimals: 18,
+		},
+		rpcUrls: ['https://rpc.api.moonbeam.network'],
+		blockExplorerUrls: ['https://moonbeam.moonscan.io/'],
+	},
+};
+
 export class MoonbeamLib {
 	public isConnected = false;
 
@@ -85,7 +121,7 @@ export class MoonbeamLib {
 	async connectMetaMask(
 		onAccountsChanged: (accounts: Address[]) => void,
 		onNetworkChanged: (networkId: number) => void,
-		toAlpha?: boolean
+		network?: string
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
 			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
@@ -98,22 +134,12 @@ export class MoonbeamLib {
 					// Enable MetaMask accounts
 					const accountsRead = await provider.request({ method: 'eth_requestAccounts' });
 					// const accountsRead = await web3.eth.getAccounts();
-					if (toAlpha) {
+
+					if (network) {
+						const networkConfigs = NETWORK_CONFIGS[network];
 						await provider.request({
 							method: 'wallet_addEthereumChain',
-							params: [
-								{
-									chainId: '0x507',
-									chainName: 'Moonbase Alpha',
-									nativeCurrency: {
-										name: 'DEV',
-										symbol: 'DEV',
-										decimals: 18,
-									},
-									rpcUrls: ['https://rpc.api.moonbase.moonbeam.network'],
-									blockExplorerUrls: ['https://moonbase-blockscout.testnet.moonbeam.network/'],
-								},
-							],
+							params: [networkConfigs],
 						});
 					}
 
