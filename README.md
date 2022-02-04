@@ -47,6 +47,10 @@ When developing the plugin, you can view the changes you're making locally from 
 
 Once the local plugin has been created, you can navigate to it test out your changes!
 
+## Publish Changes
+
+To publish changes to the live plugin, all you have to do is run `yarn publish-pages` and commit the updated build files!
+
 ## How to Use the Plugin
 
 1. Click RemixIDE Plugin Manager Icon and activate Moonbeam Plugin
