@@ -8,6 +8,8 @@ import SmartContracts from './components/SmartContracts';
 import { InterfaceContract } from './components/Types';
 import TxValue from './components/TxValue';
 
+const supportedNetworks: string[] = ['Moonbase Alpha', 'Moonriver', 'Moonbeam'];
+
 const App: React.FunctionComponent = () => {
 	const [account, setAccount] = React.useState<string>('');
 	const [balance, setBalance] = React.useState<string>('');
@@ -18,8 +20,9 @@ const App: React.FunctionComponent = () => {
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 	const [txValue, setTxValue] = React.useState<BN>(new BN(0));
+	const [isMoonbeam, setIsMoonbeam] = React.useState<boolean>(false);
 
-	async function connect(toAlpha?: boolean) {
+	async function connect(selectedNetwork: string) {
 		setBusy(true);
 		const { networkId } = await moonbeamLib.connectMetaMask(
 			(accounts: string[]) => {
@@ -28,9 +31,16 @@ const App: React.FunctionComponent = () => {
 			},
 			async (_networkId: number) => {
 				await updateBalance(account);
-				setNetwork(networkName(_networkId));
+				const name = networkName(_networkId);
+				if (name === 'Not Moonbeam') {
+					setIsMoonbeam(false);
+					setNetwork(selectedNetwork);
+				} else {
+					setIsMoonbeam(true);
+					setNetwork(name);
+				}
 			},
-			toAlpha
+			selectedNetwork
 		);
 		setNetwork(networkName(networkId));
 		setBusy(false);
@@ -47,15 +57,48 @@ const App: React.FunctionComponent = () => {
 		setContracts(contracts.concat([contract]));
 	}
 
+	function isNetwork(text: string): string | undefined {
+		if (supportedNetworks.includes(text)) {
+			return text as string;
+		}
+		throw new Error('This is not a valid network');
+	}
+
 	function Networks() {
 		return (
 			<Form.Group>
 				<Form.Text className="text-muted">
 					<small>NETWORK</small>
 				</Form.Text>
-				<InputGroup>
-					<Form.Control type="text" placeholder="0.0" value={network} size="sm" readOnly />
-				</InputGroup>
+				<InputGroup.Append>
+					<Form.Control
+						as="select"
+						size="lg"
+						value={network}
+						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+							const selectedNetwork = isNetwork(event.target.value);
+							if (selectedNetwork) setNetwork(selectedNetwork);
+						}}
+					>
+						{supportedNetworks.map((opt) => {
+							return <option key={opt}>{opt}</option>;
+						})}
+					</Form.Control>
+					<InputGroup.Append>
+						<OverlayTrigger
+							placement="bottom"
+							overlay={
+								<Tooltip id="overlay-connect" hidden={account !== ''}>
+									Connect to Wallet
+								</Tooltip>
+							}
+						>
+							<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(network)}>
+								<small>Connect</small>
+							</Button>
+						</OverlayTrigger>
+					</InputGroup.Append>
+				</InputGroup.Append>
 			</Form.Group>
 		);
 	}
@@ -69,7 +112,7 @@ const App: React.FunctionComponent = () => {
 							<small>ACCOUNT</small>
 						</Form.Text>
 						<InputGroup>
-							{account ? (
+							{account && network ? (
 								<InputGroup.Append>
 									<Button
 										variant="link"
@@ -85,37 +128,12 @@ const App: React.FunctionComponent = () => {
 								</InputGroup.Append>
 							) : null}
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
-							<InputGroup.Append>
-								<OverlayTrigger
-									placement="left"
-									overlay={
-										<Tooltip id="overlay-connect" hidden={account !== ''}>
-											Connect to Wallet
-										</Tooltip>
-									}
-								>
-									<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect()}>
-										<small>Connect</small>
-									</Button>
-								</OverlayTrigger>
-							</InputGroup.Append>
 						</InputGroup>
+						<Networks />
 						{moonbeamLib.isConnected ? (
-							network === 'Not Moonbeam' ? (
+							!isMoonbeam ? (
 								<p className="text-center mt-3">
-									<small style={{ color: 'red', padding: '1em' }}>
-										Connect MetaMask to a Moonbeam Network :{' '}
-										<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(true)}>
-											Connect to Moonbase Alpha
-										</Button>
-										<a
-											target="_parent"
-											rel="noreferrer"
-											href="https://docs.moonbeam.network/getting-started/testnet/metamask/"
-										>
-											(How to connect to Moonbeam networks)
-										</a>
-									</small>
+									<small style={{ color: 'red', padding: '1em' }}>Connect MetaMask to a Moonbeam Network</small>
 								</p>
 							) : (
 								<p className="text-center mt-3">
@@ -136,7 +154,6 @@ const App: React.FunctionComponent = () => {
 							<Form.Control type="text" placeholder="0.0" value={balance} size="sm" readOnly />
 						</InputGroup>
 					</Form.Group>
-					<Networks />
 					{TxValue(setTxValue)}
 				</Form>
 				<hr />
