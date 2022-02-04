@@ -73,17 +73,31 @@ const App: React.FunctionComponent = () => {
 				<InputGroup.Append>
 					<Form.Control
 						as="select"
+						size="lg"
 						value={network}
 						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
 							const selectedNetwork = isNetwork(event.target.value);
 							if (selectedNetwork) setNetwork(selectedNetwork);
 						}}
-						style={{ marginLeft: '1em' }}
 					>
 						{supportedNetworks.map((opt) => {
 							return <option key={opt}>{opt}</option>;
 						})}
 					</Form.Control>
+					<InputGroup.Append>
+						<OverlayTrigger
+							placement="bottom"
+							overlay={
+								<Tooltip id="overlay-connect" hidden={account !== ''}>
+									Connect to Wallet
+								</Tooltip>
+							}
+						>
+							<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(network)}>
+								<small>Connect</small>
+							</Button>
+						</OverlayTrigger>
+					</InputGroup.Append>
 				</InputGroup.Append>
 			</Form.Group>
 		);
@@ -114,22 +128,8 @@ const App: React.FunctionComponent = () => {
 								</InputGroup.Append>
 							) : null}
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
-							<Networks />
-							<InputGroup.Append>
-								<OverlayTrigger
-									placement="left"
-									overlay={
-										<Tooltip id="overlay-connect" hidden={account !== ''}>
-											Connect to Wallet
-										</Tooltip>
-									}
-								>
-									<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(network)}>
-										<small>Connect</small>
-									</Button>
-								</OverlayTrigger>
-							</InputGroup.Append>
 						</InputGroup>
+						<Networks />
 						{moonbeamLib.isConnected ? (
 							!isMoonbeam ? (
 								<p className="text-center mt-3">
