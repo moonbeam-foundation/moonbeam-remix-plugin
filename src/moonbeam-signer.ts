@@ -158,6 +158,7 @@ export class MoonbeamLib {
 								const accountsReadAgain = await provider.request({ method: 'eth_accounts' });
 								onAccountsChanged(accountsReadAgain);
 							} else {
+								this.isConnected = false;
 								window.location.reload();
 							}
 						});

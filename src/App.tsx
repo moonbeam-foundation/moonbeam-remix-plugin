@@ -21,6 +21,7 @@ const App: React.FunctionComponent = () => {
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 	const [txValue, setTxValue] = React.useState<BN>(new BN(0));
+	const [isMoonbeam, setIsMoonbeam] = React.useState<boolean>(false);
 
 	async function connect(selectedNetwork: string) {
 		setBusy(true);
@@ -73,11 +74,26 @@ const App: React.FunctionComponent = () => {
 				updateBalance(accountsRead[0]);
 			}
 
+			const chainRead = await provider.request({ method: 'net_version' });
+			const chainReadName = networkName(Number(chainRead));
+			if (chainReadName === 'Not Moonbeam') {
+				setIsMoonbeam(false);
+			} else {
+				setIsMoonbeam(true);
+			}
+
 			if (provider && provider.isMetaMask) {
 				provider.on('accountsChanged', () => {
 					setAccount('');
 					setBalance('');
 					setConnected(false);
+				});
+
+				provider.on('chainChanged', (chainId: string) => {
+					const name = networkName(Number(chainId));
+					if (chainReadName === 'Not Moonbeam') {
+						setIsMoonbeam(false);
+					}
 				});
 			}
 		}
@@ -152,9 +168,15 @@ const App: React.FunctionComponent = () => {
 						</InputGroup>
 						<Networks />
 						{connected ? (
-							<p className="text-center mt-3">
-								<small style={{ color: 'green' }}>Connected to {network}</small>
-							</p>
+							!isMoonbeam ? (
+								<p className="text-center mt-3">
+									<small style={{ color: 'red', padding: '1em' }}>Connect MetaMask to a Moonbeam Network</small>
+								</p>
+							) : (
+								<p className="text-center mt-3">
+									<small style={{ color: 'green' }}>Connected to {network}</small>
+								</p>
+							)
 						) : (
 							<p className="text-center mt-3">
 								<small style={{ color: 'red' }}>Please Connect</small>
