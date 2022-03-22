@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Container, Form, InputGroup, Tooltip, Button, OverlayTrigger } from 'react-bootstrap';
 import copy from 'copy-to-clipboard';
 import BN from 'bn.js';
@@ -16,11 +16,11 @@ const App: React.FunctionComponent = () => {
 	const [network, setNetwork] = React.useState<string>('Moonbase Alpha');
 	const [busy, setBusy] = React.useState<boolean>(false);
 	const [moonbeamLib] = React.useState<MoonbeamLib>(new MoonbeamLib(NETWORKS['Moonbase Alpha']));
+	const [connected, setConnected] = React.useState<boolean>(false);
 	const [atAddress, setAtAddress] = React.useState<string>('');
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 	const [txValue, setTxValue] = React.useState<BN>(new BN(0));
-	const [isMoonbeam, setIsMoonbeam] = React.useState<boolean>(false);
 
 	async function connect(selectedNetwork: string) {
 		setBusy(true);
@@ -33,15 +33,14 @@ const App: React.FunctionComponent = () => {
 				await updateBalance(account);
 				const name = networkName(_networkId);
 				if (name === 'Not Moonbeam') {
-					setIsMoonbeam(false);
 					setNetwork(selectedNetwork);
 				} else {
-					setIsMoonbeam(true);
 					setNetwork(name);
 				}
 			},
 			selectedNetwork
 		);
+		setConnected(moonbeamLib.isConnected);
 		setNetwork(networkName(networkId));
 		setBusy(false);
 	}
@@ -64,6 +63,28 @@ const App: React.FunctionComponent = () => {
 		throw new Error('This is not a valid network');
 	}
 
+	useEffect(() => {
+		async function updateAccount() {
+			const provider: any = await moonbeamLib.getProvider();
+			const accountsRead = await provider.request({ method: 'eth_accounts' });
+			if (accountsRead.length > 0) {
+				setConnected(true);
+				setAccount(accountsRead[0]);
+				updateBalance(accountsRead[0]);
+			}
+
+			if (provider && provider.isMetaMask) {
+				provider.on('accountsChanged', () => {
+					setAccount('');
+					setBalance('');
+					setConnected(false);
+				});
+			}
+		}
+
+		updateAccount();
+	});
+
 	function Networks() {
 		return (
 			<Form.Group>
@@ -77,7 +98,7 @@ const App: React.FunctionComponent = () => {
 						value={network}
 						onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
 							const selectedNetwork = isNetwork(event.target.value);
-							if (selectedNetwork) setNetwork(selectedNetwork);
+							if (selectedNetwork) connect(selectedNetwork);
 						}}
 					>
 						{supportedNetworks.map((opt) => {
@@ -130,16 +151,10 @@ const App: React.FunctionComponent = () => {
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
 						</InputGroup>
 						<Networks />
-						{moonbeamLib.isConnected ? (
-							!isMoonbeam ? (
-								<p className="text-center mt-3">
-									<small style={{ color: 'red', padding: '1em' }}>Connect MetaMask to a Moonbeam Network</small>
-								</p>
-							) : (
-								<p className="text-center mt-3">
-									<small style={{ color: 'green' }}>Connected to {network}</small>
-								</p>
-							)
+						{connected ? (
+							<p className="text-center mt-3">
+								<small style={{ color: 'green' }}>Connected to {network}</small>
+							</p>
 						) : (
 							<p className="text-center mt-3">
 								<small style={{ color: 'red' }}>Please Connect</small>
