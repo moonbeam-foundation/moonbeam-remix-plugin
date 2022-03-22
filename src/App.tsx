@@ -64,6 +64,18 @@ const App: React.FunctionComponent = () => {
 		throw new Error('This is not a valid network');
 	}
 
+	function updateNetwork(name: string) {
+		if (name === 'Not Moonbeam') {
+			setIsMoonbeam(false);
+			setNetwork('Moonbase Alpha'); // default to Moonbase
+		} else {
+			setIsMoonbeam(true);
+			if (network !== name) {
+				setNetwork(name);
+			}
+		}
+	}
+
 	useEffect(() => {
 		async function updateAccount() {
 			const provider: any = await moonbeamLib.getProvider();
@@ -76,14 +88,7 @@ const App: React.FunctionComponent = () => {
 
 			const chainRead = await provider.request({ method: 'net_version' });
 			const chainReadName = networkName(Number(chainRead));
-			if (chainReadName === 'Not Moonbeam') {
-				setIsMoonbeam(false);
-			} else {
-				setIsMoonbeam(true);
-				if (network !== chainReadName) {
-					setNetwork(chainReadName);
-				}
-			}
+			updateNetwork(chainReadName);
 
 			if (provider && provider.isMetaMask) {
 				provider.on('accountsChanged', () => {
@@ -94,9 +99,7 @@ const App: React.FunctionComponent = () => {
 
 				provider.on('chainChanged', (chainId: string) => {
 					const name = networkName(Number(chainId));
-					if (chainReadName === 'Not Moonbeam') {
-						setIsMoonbeam(false);
-					}
+					updateNetwork(name);
 				});
 			}
 		}
