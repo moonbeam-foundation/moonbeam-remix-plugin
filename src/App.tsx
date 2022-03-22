@@ -80,6 +80,9 @@ const App: React.FunctionComponent = () => {
 				setIsMoonbeam(false);
 			} else {
 				setIsMoonbeam(true);
+				if (network !== chainReadName) {
+					setNetwork(chainReadName);
+				}
 			}
 
 			if (provider && provider.isMetaMask) {
