@@ -109,14 +109,22 @@ export class MoonbeamLib {
 		erc20: null,
 	};
 
+	public provider: any = null;
+
 	constructor(network: Network) {
 		this.web3 = new Web3(network.provider);
 		this.contracts.erc20 = new this.web3.eth.Contract(ERC20ABI);
+		this.provider = this.getProvider();
 	}
 
 	async getTotalBalance(address: string): Promise<string> {
 		return this.web3.eth.getBalance(address);
 	}
+
+	getProvider = async () => {
+		const provider = await detectEthereumProvider({ mustBeMetaMask: true });
+		return provider;
+	};
 
 	async connectMetaMask(
 		onAccountsChanged: (accounts: Address[]) => void,
@@ -124,7 +132,7 @@ export class MoonbeamLib {
 		network?: string
 	) {
 		if ((window as { [key: string]: any }).ethereum) {
-			const provider: any = await detectEthereumProvider({ mustBeMetaMask: true });
+			const provider: any = await this.getProvider();
 			if (provider && provider.isMetaMask) {
 				try {
 					// initiate web3
@@ -150,6 +158,7 @@ export class MoonbeamLib {
 								const accountsReadAgain = await provider.request({ method: 'eth_accounts' });
 								onAccountsChanged(accountsReadAgain);
 							} else {
+								this.isConnected = false;
 								window.location.reload();
 							}
 						});
