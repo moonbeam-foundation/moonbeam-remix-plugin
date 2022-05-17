@@ -21,11 +21,10 @@ const App: React.FunctionComponent = () => {
 	const [contracts, setContracts] = React.useState<InterfaceContract[]>([]);
 	const [selected, setSelected] = React.useState<InterfaceContract | null>(null);
 	const [txValue, setTxValue] = React.useState<BN>(new BN(0));
-	const [isMoonbeam, setIsMoonbeam] = React.useState<boolean>(false);
 
 	async function connect(selectedNetwork: string) {
 		setBusy(true);
-		const { networkId } = await moonbeamLib.connectMetaMask(
+		const { isConnected, networkId } = await moonbeamLib.connectMetaMask(
 			(accounts: string[]) => {
 				setAccount(accounts[0]);
 				updateBalance(accounts[0]);
@@ -41,15 +40,16 @@ const App: React.FunctionComponent = () => {
 			},
 			selectedNetwork
 		);
-		setConnected(moonbeamLib.isConnected);
-		setNetwork(networkName(networkId));
 		setBusy(false);
+		return { isConnected, networkId };
 	}
 
 	async function updateBalance(address: string) {
 		if (address && address !== '') {
 			const readBalance = await moonbeamLib.getTotalBalance(address);
 			setBalance(moonbeamLib.web3.utils.fromWei(readBalance.toString()));
+		} else {
+			setBalance('');
 		}
 	}
 
@@ -64,47 +64,43 @@ const App: React.FunctionComponent = () => {
 		throw new Error('This is not a valid network');
 	}
 
-	function updateNetwork(name: string) {
-		if (name === 'Not Moonbeam') {
-			setIsMoonbeam(false);
-			setNetwork('Moonbase Alpha'); // default to Moonbase
-		} else {
-			setIsMoonbeam(true);
-			if (network !== name) {
-				setNetwork(name);
-			}
-		}
-	}
-
 	useEffect(() => {
-		async function updateAccount() {
-			const provider: any = await moonbeamLib.getProvider();
-			const accountsRead = await provider.request({ method: 'eth_accounts' });
-			if (accountsRead.length > 0) {
+		function updateNetwork(connectedName: string) {
+			if (connectedName === 'Not Moonbeam') {
+				setNetwork('Moonbase Alpha');
+				setConnected(false);
+			} else {
+				setNetwork(connectedName);
 				setConnected(true);
-				setAccount(accountsRead[0]);
-				updateBalance(accountsRead[0]);
-			}
-
-			const chainRead = await provider.request({ method: 'net_version' });
-			const chainReadName = networkName(Number(chainRead));
-			updateNetwork(chainReadName);
-
-			if (provider && provider.isMetaMask) {
-				provider.on('accountsChanged', () => {
-					setAccount('');
-					setBalance('');
-					setConnected(false);
-				});
-
-				provider.on('chainChanged', (chainId: string) => {
-					const name = networkName(Number(chainId));
-					updateNetwork(name);
-				});
 			}
 		}
 
-		updateAccount();
+		async function updateConnection() {
+			const provider: any = await moonbeamLib.getProvider();
+			const chain = { ...provider }.networkVersion;
+			const name = networkName(chain);
+
+			// check accout on initial page load
+			if (!account && !busy) {
+				const accountsRead = await provider.request({ method: 'eth_accounts' });
+				if (accountsRead > 0) {
+					setAccount(accountsRead[0]);
+				}
+			}
+
+			if (!moonbeamLib.isConnected && account) {
+				const { isConnected, networkId } = await connect(name);
+				if (isConnected) {
+					updateNetwork(networkName(networkId));
+				}
+			}
+
+			if (moonbeamLib.isConnected && account) {
+				updateNetwork(name);
+			}
+		}
+
+		updateConnection();
 	});
 
 	function Networks() {
@@ -174,15 +170,9 @@ const App: React.FunctionComponent = () => {
 						</InputGroup>
 						<Networks />
 						{connected ? (
-							!isMoonbeam ? (
-								<p className="text-center mt-3">
-									<small style={{ color: 'red', padding: '1em' }}>Connect MetaMask to a Moonbeam Network</small>
-								</p>
-							) : (
-								<p className="text-center mt-3">
-									<small style={{ color: 'green' }}>Connected to {network}</small>
-								</p>
-							)
+							<p className="text-center mt-3">
+								<small style={{ color: 'green' }}>Connected to {network}</small>
+							</p>
 						) : (
 							<p className="text-center mt-3">
 								<small style={{ color: 'red' }}>Please Connect</small>

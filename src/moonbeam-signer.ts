@@ -141,7 +141,6 @@ export class MoonbeamLib {
 
 					// Enable MetaMask accounts
 					const accountsRead = await provider.request({ method: 'eth_requestAccounts' });
-					// const accountsRead = await web3.eth.getAccounts();
 
 					if (network) {
 						const networkConfigs = NETWORK_CONFIGS[network];
