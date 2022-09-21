@@ -41,6 +41,7 @@ const App: React.FunctionComponent = () => {
 			selectedNetwork
 		);
 		setBusy(false);
+		setConnected(isConnected);
 		return { isConnected, networkId };
 	}
 
@@ -138,7 +139,7 @@ const App: React.FunctionComponent = () => {
 								</Tooltip>
 							}
 						>
-							<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(network)}>
+							<Button variant="warning" block size="sm" disabled={busy || connected} onClick={() => connect(network)}>
 								<small>Connect</small>
 							</Button>
 						</OverlayTrigger>
@@ -174,8 +175,8 @@ const App: React.FunctionComponent = () => {
 							) : null}
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
 							<InputGroup.Append>
-								<Button variant="warning" block size="sm" disabled={busy} onClick={() => reconnect()}>
-									<small>Reload </small>
+								<Button variant="warning" block size="sm" disabled={busy || !connected} onClick={() => reconnect()}>
+									<small>Connect </small>
 								</Button>
 							</InputGroup.Append>
 						</InputGroup>
