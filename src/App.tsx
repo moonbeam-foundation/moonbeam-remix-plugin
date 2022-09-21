@@ -41,7 +41,14 @@ const App: React.FunctionComponent = () => {
 			selectedNetwork
 		);
 		setBusy(false);
+		setConnected(isConnected);
 		return { isConnected, networkId };
+	}
+
+	async function reconnect() {
+		setBusy(true);
+		await moonbeamLib.reconnect();
+		setBusy(false);
 	}
 
 	async function updateBalance(address: string) {
@@ -132,7 +139,7 @@ const App: React.FunctionComponent = () => {
 								</Tooltip>
 							}
 						>
-							<Button variant="warning" block size="sm" disabled={busy} onClick={() => connect(network)}>
+							<Button variant="warning" block size="sm" disabled={busy || connected} onClick={() => connect(network)}>
 								<small>Connect</small>
 							</Button>
 						</OverlayTrigger>
@@ -167,6 +174,11 @@ const App: React.FunctionComponent = () => {
 								</InputGroup.Append>
 							) : null}
 							<Form.Control type="text" placeholder="Account" value={account} size="sm" readOnly />
+							<InputGroup.Append>
+								<Button variant="warning" block size="sm" disabled={busy || !connected} onClick={() => reconnect()}>
+									<small>Connect </small>
+								</Button>
+							</InputGroup.Append>
 						</InputGroup>
 						<Networks />
 						{connected ? (
@@ -181,7 +193,7 @@ const App: React.FunctionComponent = () => {
 					</Form.Group>
 					<Form.Group>
 						<Form.Text className="text-muted">
-							<small>BALANCE (MOONBEAM)</small>
+							<small>BALANCE ({network.toUpperCase()})</small>
 						</Form.Text>
 						<InputGroup>
 							<Form.Control type="text" placeholder="0.0" value={balance} size="sm" readOnly />
