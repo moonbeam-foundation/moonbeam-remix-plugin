@@ -141,7 +141,6 @@ export class MoonbeamLib {
 
 					// Enable MetaMask accounts
 					const accountsRead = await provider.request({ method: 'eth_requestAccounts' });
-					// const accountsRead = await web3.eth.getAccounts();
 
 					if (network) {
 						const networkConfigs = NETWORK_CONFIGS[network];
@@ -155,7 +154,7 @@ export class MoonbeamLib {
 						onAccountsChanged(accountsRead);
 						provider.on('accountsChanged', async (accounts: string[]) => {
 							if (accounts.length > 0) {
-								const accountsReadAgain = await provider.request({ method: 'eth_accounts' });
+								const accountsReadAgain = await provider.request({ method: 'eth_requestAccounts' });
 								onAccountsChanged(accountsReadAgain);
 							} else {
 								this.isConnected = false;
@@ -183,6 +182,31 @@ export class MoonbeamLib {
 			this.isMoonbeamNetwork = true;
 		}
 		return { isConnected: this.isConnected, networkId };
+	}
+
+	async reconnect() {
+		if ((window as { [key: string]: any }).ethereum) {
+			const provider: any = await this.getProvider();
+			if (provider && provider.isMetaMask) {
+				try {
+					await provider.request({
+						method: 'wallet_requestPermissions',
+						params: [
+							{
+								eth_accounts: {},
+							},
+						],
+					});
+					this.isConnected = true;
+				} catch (e) {
+					if (e.code !== 4001) {
+						throw new Error(e.message);
+					}
+				}
+			} else {
+				throw new Error('Other ethereum wallet did not support.');
+			}
+		}
 	}
 
 	async getAccounts(): Promise<Address[]> {
