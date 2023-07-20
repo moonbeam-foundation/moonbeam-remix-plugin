@@ -9,7 +9,7 @@ The Moonbeam plugin for Ethereum's Remix IDE. It support for deploy and interact
 First, clone the repository:
 
 ```
-git clone https://github.com/PureStake/moonbeam-remix-plugin
+git clone https://github.com/moonbeam-foundation/moonbeam-remix-plugin
 cd moonbeam-remix-plugin
 ```
 
@@ -60,4 +60,3 @@ To publish changes to the live plugin, all you have to do is run `yarn publish-p
 5. Compile your smart contract
 6. Select Contract to deploy
 7. Deploy
-
